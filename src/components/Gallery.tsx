@@ -162,7 +162,7 @@ export function Gallery({ onEditSpace, onViewSpace }: GalleryProps) {
   };
 
   return (
-    <div className="w-full mt-8 min-w-0">
+    <div className="w-full mt-12 min-w-0">
       {/* Masonry Gallery - full width, columns from viewport; no skipped items */}
       <ResponsiveMasonry
         columnsCountBreakPoints={{

@@ -1,5 +1,4 @@
 import { User, Bell } from 'lucide-react';
-import React from 'react';
 import { useState } from 'react';
 
 interface HeaderProps {

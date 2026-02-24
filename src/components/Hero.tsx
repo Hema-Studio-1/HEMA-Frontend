@@ -11,7 +11,7 @@ export function Hero({ onStartAIFlow, onCreateSpace }: HeroProps) {
     <div className="max-w-5xl">
       {/* Headline - Reduced size, tighter spacing */}
         <h1 
-        className="text-[56px] leading-[1.05] mb-2 text-[#2a2a2a] tracking-tight"
+        className="text-[56px] leading-[1.05] mb-4 text-[#2a2a2a] tracking-tight"
       >
         Design interiors with AI
       </h1>

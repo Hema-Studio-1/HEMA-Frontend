@@ -15,7 +15,6 @@ import { MoodBoards } from '@/components/MoodBoards';
 import { SpaceFormDialog } from '@/components/SpaceFormDialog';
 import { Team } from '@/components/Team';
 import { Notifications } from '@/components/Notifications';
-import React from 'react';
 
 type View = 'home' | 'projects' | 'assets' | 'settings' | 'moodboard' | 'team' | 'projectDetail' | 'aiGeneration' | 'notifications';
 

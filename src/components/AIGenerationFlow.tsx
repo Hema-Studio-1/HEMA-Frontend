@@ -250,7 +250,7 @@ export function AIGenerationFlow({ initialSpaceName = '', onBack, onFullViewChan
   return (
     <div className="grid h-full grid-rows-[auto_1fr]">
       {/* Top Navigation Bar - Back, Space Name, Full-View */}
-      <div className="relative mb-8 flex items-center justify-between">
+      <div className="relative mb-6 flex items-center justify-between">
         {/* Back Button */}
         <button
           onClick={onBack}
@@ -356,9 +356,9 @@ export function AIGenerationFlow({ initialSpaceName = '', onBack, onFullViewChan
       </div>
 
       {/* Main Content with Step Indicator */}
-      <div className="relative">
+      <div className="relative w-full max-w-[1640px] mx-auto h-fit self-center">
         {/* Vertical Step Indicator - Right Side - Compact */}
-        <div className="absolute right-6 top-0 flex flex-col gap-6">
+        <div className="absolute right-0 top-0 flex flex-col gap-6">
           {steps.map((step) => (
             <button
               key={step.number}
@@ -407,17 +407,15 @@ export function AIGenerationFlow({ initialSpaceName = '', onBack, onFullViewChan
         </div>
 
         {/* Step Content - single grid: left 1fr, right minmax(350px,420px), pr-24 */}
-        <div className="grid gap-8 pr-28 min-h-0" style={{ gridTemplateColumns: '1fr minmax(320px, 380px)' }}>
+        <div className="grid gap-x-8 gap-y-4 pr-16 min-h-0 md:grid-cols-[1fr_minmax(200px,260px)] xl:grid-cols-[1fr_minmax(320px,380px)]" >
           {/* Left column - canvas */}
           <div className="min-h-0">
           {currentStep === 1 && (
-            <div>
-              {/* Left Section - Upload Area */}
-              <div>
+              <>
                 <label htmlFor="image-upload">
                   <div 
-                    className="bg-[#FDFCFB] rounded-sm flex flex-col items-center justify-center text-center cursor-pointer transition-colors duration-300 hover:bg-[#FAF9F7] relative shadow-sm overflow-hidden"
-                    style={{ height: '600px' }}
+                    className="bg-[#FDFCFB] rounded-sm flex flex-col items-center justify-center text-center cursor-pointer transition-colors duration-300 hover:bg-[#FAF9F7] relative shadow-sm overflow-hidden h-full"
+                    style={{ minHeight: '500px', maxHeight: '600px' }}
                   >
                     {uploadedImage ? (
                       <>
@@ -475,8 +473,7 @@ export function AIGenerationFlow({ initialSpaceName = '', onBack, onFullViewChan
                   onChange={handleImageUpload}
                   className="hidden"
                 />
-              </div>
-            </div>
+              </>  
           )}
 
           {/* STEP 2 - MAKE SPACE (left) */}
@@ -1478,7 +1475,7 @@ export function AIGenerationFlow({ initialSpaceName = '', onBack, onFullViewChan
 
           </div>
           {/* Footer Actions - span full grid width */}
-          <div className="flex items-center justify-between mt-16 pr-6" style={{ gridColumn: '1 / -1' }}>
+          <div className="flex items-center justify-between" style={{ gridColumn: '1 / -1' }}>
             <div className="flex items-center gap-8">
               <button
                 onClick={handleClearDraft}
