@@ -26,15 +26,15 @@ export function AddTeamMemberDialog({ isOpen, onClose, onAdd }: AddTeamMemberDia
 
   return (
     <>
-      {/* Backdrop */}
-      <div 
+
+      <div
         className="fixed inset-0 bg-[#2a2a2a]/20 backdrop-blur-sm z-40 transition-opacity duration-500"
         onClick={onClose}
       />
 
       {/* Dialog */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div 
+        <div
           className="bg-[#F7F5F2] rounded-sm w-full max-w-md"
           style={{
             boxShadow: '0 4px 24px rgba(0, 0, 0, 0.08)'
@@ -45,7 +45,7 @@ export function AddTeamMemberDialog({ isOpen, onClose, onAdd }: AddTeamMemberDia
           <div className="flex items-center justify-between p-8 pb-6">
             <h2
               className="text-[24px] text-[#2a2a2a]"
-              style={{ 
+              style={{
                 fontFamily: "'Playfair Display', serif",
                 fontWeight: 300,
                 letterSpacing: '-0.01em'
@@ -65,9 +65,9 @@ export function AddTeamMemberDialog({ isOpen, onClose, onAdd }: AddTeamMemberDia
           <div className="px-8 pb-8 space-y-6">
             {/* Name */}
             <div>
-              <label 
+              <label
                 className="block text-[11px] text-[#9a9a9a] mb-2 uppercase tracking-widest"
-                style={{ 
+                style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 400,
                   letterSpacing: '0.1em'
@@ -81,7 +81,7 @@ export function AddTeamMemberDialog({ isOpen, onClose, onAdd }: AddTeamMemberDia
                 onChange={(e) => setName(e.target.value)}
                 placeholder="John Doe"
                 className="w-full px-0 py-3 text-[15px] text-[#2a2a2a] placeholder:text-[#c5c5c5] bg-transparent border-b border-[#E8E6E3] focus:border-[#A4AC96] focus:outline-none transition-colors duration-300"
-                style={{ 
+                style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 300
                 }}
@@ -90,9 +90,9 @@ export function AddTeamMemberDialog({ isOpen, onClose, onAdd }: AddTeamMemberDia
 
             {/* Email */}
             <div>
-              <label 
+              <label
                 className="block text-[11px] text-[#9a9a9a] mb-2 uppercase tracking-widest"
-                style={{ 
+                style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 400,
                   letterSpacing: '0.1em'
@@ -106,7 +106,7 @@ export function AddTeamMemberDialog({ isOpen, onClose, onAdd }: AddTeamMemberDia
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="email@example.com"
                 className="w-full px-0 py-3 text-[15px] text-[#2a2a2a] placeholder:text-[#c5c5c5] bg-transparent border-b border-[#E8E6E3] focus:border-[#A4AC96] focus:outline-none transition-colors duration-300"
-                style={{ 
+                style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 300
                 }}
@@ -116,9 +116,9 @@ export function AddTeamMemberDialog({ isOpen, onClose, onAdd }: AddTeamMemberDia
             {/* Role */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label 
+                <label
                   className="text-[11px] text-[#9a9a9a] uppercase tracking-widest"
-                  style={{ 
+                  style={{
                     fontFamily: "'Inter', sans-serif",
                     fontWeight: 400,
                     letterSpacing: '0.1em'
@@ -144,7 +144,7 @@ export function AddTeamMemberDialog({ isOpen, onClose, onAdd }: AddTeamMemberDia
               <button
                 onClick={onClose}
                 className="flex-1 px-6 py-3 text-[13px] text-[#626262] hover:text-[#2a2a2a] border border-[#E8E6E3] hover:border-[#2a2a2a] transition-colors duration-300"
-                style={{ 
+                style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 400,
                   letterSpacing: '0.03em'
@@ -155,7 +155,7 @@ export function AddTeamMemberDialog({ isOpen, onClose, onAdd }: AddTeamMemberDia
               <button
                 onClick={handleSubmit}
                 className="flex-1 px-6 py-3 bg-[#2a2a2a] text-[#F7F5F2] text-[13px] hover:bg-[#3d3d3d] transition-colors duration-300"
-                style={{ 
+                style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 400,
                   letterSpacing: '0.03em'
