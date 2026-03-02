@@ -248,7 +248,7 @@ export function AIGenerationFlow({ initialSpaceName = '', onBack, onFullViewChan
   };
 
   return (
-    <div className="grid h-full grid-rows-[auto_1fr]">
+    <div className="grid lg:h-full grid-rows-[auto_1fr]">
       {/* Top Navigation Bar - Back, Space Name, Full-View */}
       <div className="relative mb-6 flex items-center justify-between">
         {/* Back Button */}
@@ -407,7 +407,7 @@ export function AIGenerationFlow({ initialSpaceName = '', onBack, onFullViewChan
         </div>
 
         {/* Step Content - single grid: left 1fr, right minmax(350px,420px), pr-24 */}
-        <div className="grid gap-x-8 gap-y-4 pr-16 min-h-0 md:grid-cols-[1fr_minmax(200px,260px)] xl:grid-cols-[1fr_minmax(320px,380px)]" >
+        <div className="grid gap-x-8 gap-y-4 pr-16 lg:min-h-0 lg:grid-cols-[1fr_minmax(200px,260px)] xl:grid-cols-[1fr_minmax(320px,380px)]" >
           {/* Left column - canvas */}
           <div className="min-h-0">
           {currentStep === 1 && (
