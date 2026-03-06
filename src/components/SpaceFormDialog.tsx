@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react';
-import { X, Upload } from 'lucide-react';
-import { CustomDropdown } from './CustomDropdown';
-import React from 'react';
+import { Upload, X } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { CustomDropdown } from "./CustomDropdown";
 
 export interface SpaceFormData {
   name: string;
@@ -13,17 +12,23 @@ export interface SpaceFormData {
 interface SpaceFormDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  mode: 'create' | 'edit';
-  editSpace?: { id: string; name: string; type?: string; category?: string; description?: string } | null;
+  mode: "create" | "edit";
+  editSpace?: {
+    id: string;
+    name: string;
+    type?: string;
+    category?: string;
+    description?: string;
+  } | null;
   onCreate: (data: SpaceFormData) => void;
   onUpdate?: (id: string, data: SpaceFormData) => void;
 }
 
 const defaultFormData: SpaceFormData = {
-  name: '',
-  type: 'Living Room',
-  category: 'Modern',
-  description: '',
+  name: "",
+  type: "Living Room",
+  category: "Modern",
+  description: "",
 };
 
 export function SpaceFormDialog({
@@ -37,12 +42,12 @@ export function SpaceFormDialog({
   const [formData, setFormData] = useState<SpaceFormData>(defaultFormData);
 
   useEffect(() => {
-    if (mode === 'edit' && editSpace) {
+    if (mode === "edit" && editSpace) {
       setFormData({
         name: editSpace.name,
-        type: editSpace.type ?? 'Living Room',
-        category: editSpace.category ?? 'Modern',
-        description: editSpace.description ?? '',
+        type: editSpace.type ?? "Living Room",
+        category: editSpace.category ?? "Modern",
+        description: editSpace.description ?? "",
       });
     } else {
       setFormData(defaultFormData);
@@ -51,7 +56,7 @@ export function SpaceFormDialog({
 
   const handleSubmit = () => {
     if (!formData.name.trim()) return;
-    if (mode === 'edit' && editSpace && onUpdate) {
+    if (mode === "edit" && editSpace && onUpdate) {
       onUpdate(editSpace.id, formData);
     } else {
       onCreate(formData);
@@ -70,12 +75,12 @@ export function SpaceFormDialog({
   return (
     <>
       <div
-        className="fixed inset-0 bg-[#2a2a2a]/10 backdrop-blur-sm z-50 transition-opacity duration-500"
+        className="fixed inset-0 bg-foreground/10 backdrop-blur-sm z-50 transition-opacity duration-500"
         onClick={handleCancel}
       />
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div
-          className="bg-[#F7F5F2] rounded-sm w-full max-w-xl p-12 relative"
+          className="bg-background rounded-sm w-full max-w-xl p-12 relative"
           onClick={(e) => e.stopPropagation()}
         >
           <button
@@ -86,24 +91,24 @@ export function SpaceFormDialog({
           </button>
 
           <h3
-            className="text-[28px] mb-8 text-[#2a2a2a]"
+            className="text-[28px] mb-8 text-foreground"
             style={{
               fontFamily: "'Playfair Display', serif",
               fontWeight: 300,
-              letterSpacing: '-0.01em'
+              letterSpacing: "-0.01em",
             }}
           >
-            {mode === 'edit' ? 'Edit space' : 'New Space'}
+            {mode === "edit" ? "Edit space" : "New Space"}
           </h3>
 
           <div className="space-y-8">
             <div>
               <label
-                className="block text-[12px] text-[#9a9a9a] mb-3 uppercase tracking-widest"
+                className="block text-[12px] text-textSecondary mb-3 uppercase tracking-widest"
                 style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 400,
-                  letterSpacing: '0.1em'
+                  letterSpacing: "0.1em",
                 }}
               >
                 Space Name
@@ -111,12 +116,14 @@ export function SpaceFormDialog({
               <input
                 type="text"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
                 placeholder="e.g., Modern Living Room"
-                className="w-full px-0 py-3 text-[16px] text-[#2a2a2a] placeholder:text-[#c5c5c5] focus:outline-none bg-transparent border-b border-[#E8E6E3] focus:border-[#A4AC96] transition-colors duration-500"
+                className="w-full px-0 py-3 text-[16px] text-foreground placeholder:text-[#c5c5c5] focus:outline-none bg-transparent border-b border-[#E8E6E3] focus:border-[#A4AC96] transition-colors duration-500"
                 style={{
                   fontFamily: "'Inter', sans-serif",
-                  fontWeight: 300
+                  fontWeight: 300,
                 }}
                 autoFocus
               />
@@ -124,11 +131,11 @@ export function SpaceFormDialog({
 
             <div>
               <label
-                className="block text-[12px] text-[#9a9a9a] mb-3 uppercase tracking-widest"
+                className="block text-[12px] text-textSecondary mb-3 uppercase tracking-widest"
                 style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 400,
-                  letterSpacing: '0.1em'
+                  letterSpacing: "0.1em",
                 }}
               >
                 Space Type
@@ -137,13 +144,13 @@ export function SpaceFormDialog({
                 value={formData.type}
                 onChange={(value) => setFormData({ ...formData, type: value })}
                 options={[
-                  { value: 'Living Room', label: 'Living Room' },
-                  { value: 'Bedroom', label: 'Bedroom' },
-                  { value: 'Kitchen', label: 'Kitchen' },
-                  { value: 'Bathroom', label: 'Bathroom' },
-                  { value: 'Dining Room', label: 'Dining Room' },
-                  { value: 'Home Office', label: 'Home Office' },
-                  { value: 'Custom', label: 'Custom' },
+                  { value: "Living Room", label: "Living Room" },
+                  { value: "Bedroom", label: "Bedroom" },
+                  { value: "Kitchen", label: "Kitchen" },
+                  { value: "Bathroom", label: "Bathroom" },
+                  { value: "Dining Room", label: "Dining Room" },
+                  { value: "Home Office", label: "Home Office" },
+                  { value: "Custom", label: "Custom" },
                 ]}
                 variant="form"
               />
@@ -151,25 +158,27 @@ export function SpaceFormDialog({
 
             <div>
               <label
-                className="block text-[12px] text-[#9a9a9a] mb-3 uppercase tracking-widest"
+                className="block text-[12px] text-textSecondary mb-3 uppercase tracking-widest"
                 style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 400,
-                  letterSpacing: '0.1em'
+                  letterSpacing: "0.1em",
                 }}
               >
                 Category / Style
               </label>
               <CustomDropdown
                 value={formData.category}
-                onChange={(value) => setFormData({ ...formData, category: value })}
+                onChange={(value) =>
+                  setFormData({ ...formData, category: value })
+                }
                 options={[
-                  { value: 'Modern', label: 'Modern' },
-                  { value: 'Japandi', label: 'Japandi' },
-                  { value: 'Minimal', label: 'Minimal' },
-                  { value: 'Industrial', label: 'Industrial' },
-                  { value: 'Scandinavian', label: 'Scandinavian' },
-                  { value: 'Organic', label: 'Organic' },
+                  { value: "Modern", label: "Modern" },
+                  { value: "Japandi", label: "Japandi" },
+                  { value: "Minimal", label: "Minimal" },
+                  { value: "Industrial", label: "Industrial" },
+                  { value: "Scandinavian", label: "Scandinavian" },
+                  { value: "Organic", label: "Organic" },
                 ]}
                 variant="form"
               />
@@ -177,11 +186,11 @@ export function SpaceFormDialog({
 
             <div>
               <label
-                className="block text-[12px] text-[#9a9a9a] mb-3 uppercase tracking-widest"
+                className="block text-[12px] text-textSecondary mb-3 uppercase tracking-widest"
                 style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 400,
-                  letterSpacing: '0.1em'
+                  letterSpacing: "0.1em",
                 }}
               >
                 Description (Optional)
@@ -189,29 +198,31 @@ export function SpaceFormDialog({
               <input
                 type="text"
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
                 placeholder="Brief description"
-                className="w-full px-0 py-3 text-[16px] text-[#2a2a2a] placeholder:text-[#c5c5c5] focus:outline-none bg-transparent border-b border-[#E8E6E3] focus:border-[#A4AC96] transition-colors duration-500"
+                className="w-full px-0 py-3 text-[16px] text-foreground placeholder:text-[#c5c5c5] focus:outline-none bg-transparent border-b border-[#E8E6E3] focus:border-[#A4AC96] transition-colors duration-500"
                 style={{
                   fontFamily: "'Inter', sans-serif",
-                  fontWeight: 300
+                  fontWeight: 300,
                 }}
               />
             </div>
 
             <div>
               <label
-                className="block text-[12px] text-[#9a9a9a] mb-3 uppercase tracking-widest"
+                className="block text-[12px] text-textSecondary mb-3 uppercase tracking-widest"
                 style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 400,
-                  letterSpacing: '0.1em'
+                  letterSpacing: "0.1em",
                 }}
               >
                 Reference Image (Optional)
               </label>
               <button
-                className="flex items-center gap-2 text-[13px] text-[#9a9a9a] hover:text-[#626262] transition-colors duration-300"
+                className="flex items-center gap-2 text-[13px] text-textSecondary hover:text-[#626262] transition-colors duration-300"
                 style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400 }}
               >
                 <Upload size={16} strokeWidth={1.5} />
@@ -223,11 +234,11 @@ export function SpaceFormDialog({
           <div className="flex items-center justify-end gap-6 mt-12">
             <button
               onClick={handleCancel}
-              className="text-[13px] text-[#9a9a9a] hover:text-[#626262] transition-colors duration-300"
+              className="text-[13px] text-textSecondary hover:text-[#626262] transition-colors duration-300"
               style={{
                 fontFamily: "'Inter', sans-serif",
                 fontWeight: 400,
-                letterSpacing: '0.02em'
+                letterSpacing: "0.02em",
               }}
             >
               Cancel
@@ -235,14 +246,14 @@ export function SpaceFormDialog({
             <button
               onClick={handleSubmit}
               disabled={!formData.name.trim()}
-              className="px-8 py-3 bg-[#2a2a2a] text-[#F7F5F2] text-[13px] hover:bg-[#3d3d3d] transition-colors duration-300 disabled:opacity-30 disabled:cursor-not-allowed"
+              className="px-8 py-3 bg-foreground text-background text-[13px] hover:bg-[#3d3d3d] transition-colors duration-300 disabled:opacity-30 disabled:cursor-not-allowed"
               style={{
                 fontFamily: "'Inter', sans-serif",
                 fontWeight: 400,
-                letterSpacing: '0.03em'
+                letterSpacing: "0.03em",
               }}
             >
-              {mode === 'edit' ? 'Update' : 'Create Space'}
+              {mode === "edit" ? "Update" : "Create Space"}
             </button>
           </div>
         </div>

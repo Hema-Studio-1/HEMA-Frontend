@@ -42,7 +42,7 @@ export function Settings() {
         {/* Page Title */}
         <div className="mb-20">
           <h2
-            className="text-[32px] tracking-tight text-[#2a2a2a]"
+            className="text-[32px] tracking-tight text-foreground"
             style={{
               fontFamily: "'Playfair Display', serif",
               fontWeight: 300,
@@ -56,7 +56,7 @@ export function Settings() {
         {/* Section 1 - Account Information */}
         <section className="mb-20">
           <h3
-            className="text-[18px] text-[#2a2a2a] mb-8"
+            className="text-[18px] text-foreground mb-8"
             style={{
               fontFamily: "'Playfair Display', serif",
               fontWeight: 300,
@@ -68,7 +68,7 @@ export function Settings() {
           <div className="space-y-8">
             <div>
               <label
-                className="block text-[11px] text-[#9a9a9a] mb-3 uppercase tracking-widest"
+                className="block text-[11px] text-textSecondary mb-3 uppercase tracking-widest"
                 style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 400,
@@ -83,7 +83,7 @@ export function Settings() {
                 onChange={(e) =>
                   setAccountData({ ...accountData, fullName: e.target.value })
                 }
-                className="w-full px-0 py-3 text-[16px] text-[#2a2a2a] placeholder:text-[#c5c5c5] focus:outline-none bg-transparent border-b border-[#E8E6E3] focus:border-[#A4AC96] transition-colors duration-500"
+                className="w-full px-0 py-3 text-[16px] text-foreground placeholder:text-[#c5c5c5] focus:outline-none bg-transparent border-b border-[#E8E6E3] focus:border-[#A4AC96] transition-colors duration-500"
                 style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 300,
@@ -93,7 +93,7 @@ export function Settings() {
 
             <div>
               <label
-                className="block text-[11px] text-[#9a9a9a] mb-3 uppercase tracking-widest"
+                className="block text-[11px] text-textSecondary mb-3 uppercase tracking-widest"
                 style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 400,
@@ -108,7 +108,7 @@ export function Settings() {
                 onChange={(e) =>
                   setAccountData({ ...accountData, email: e.target.value })
                 }
-                className="w-full px-0 py-3 text-[16px] text-[#2a2a2a] placeholder:text-[#c5c5c5] focus:outline-none bg-transparent border-b border-[#E8E6E3] focus:border-[#A4AC96] transition-colors duration-500"
+                className="w-full px-0 py-3 text-[16px] text-foreground placeholder:text-[#c5c5c5] focus:outline-none bg-transparent border-b border-[#E8E6E3] focus:border-[#A4AC96] transition-colors duration-500"
                 style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 300,
@@ -119,7 +119,7 @@ export function Settings() {
             <div className="flex items-center gap-4 pt-4">
               <button
                 onClick={handleSaveAccount}
-                className="w-fit h-fit px-4 py-3 bg-[#2a2a2a] text-[#FDFCFB] text-[13px] rounded-sm hover:opacity-80 transition-opacity duration-300 "
+                className="w-fit h-fit px-4 py-3 bg-foreground text-[#FDFCFB] text-[13px] rounded-sm hover:opacity-80 transition-opacity duration-300 "
               >
                 Save changes
               </button>
@@ -141,7 +141,7 @@ export function Settings() {
         {/* Section 2 - Security */}
         <section className="mb-20">
           <h3
-            className="text-[18px] text-[#2a2a2a] mb-8"
+            className="text-[18px] text-foreground mb-8"
             style={{
               fontFamily: "'Playfair Display', serif",
               fontWeight: 300,
@@ -153,7 +153,7 @@ export function Settings() {
           <div className="space-y-8">
             <div>
               <label
-                className="block text-[11px] text-[#9a9a9a] mb-3 uppercase tracking-widest"
+                className="block text-[11px] text-textSecondary mb-3 uppercase tracking-widest"
                 style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 400,
@@ -172,7 +172,7 @@ export function Settings() {
                   })
                 }
                 placeholder="Enter current password"
-                className="w-full px-0 py-3 text-[16px] text-[#2a2a2a] placeholder:text-[#c5c5c5] focus:outline-none bg-transparent border-b border-[#E8E6E3] focus:border-[#A4AC96] transition-colors duration-500"
+                className="w-full px-0 py-3 text-[16px] text-foreground placeholder:text-[#c5c5c5] focus:outline-none bg-transparent border-b border-[#E8E6E3] focus:border-[#A4AC96] transition-colors duration-500"
                 style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 300,
@@ -182,7 +182,7 @@ export function Settings() {
 
             <div>
               <label
-                className="block text-[11px] text-[#9a9a9a] mb-3 uppercase tracking-widest"
+                className="block text-[11px] text-textSecondary mb-3 uppercase tracking-widest"
                 style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 400,
@@ -201,7 +201,7 @@ export function Settings() {
                   })
                 }
                 placeholder="Enter new password"
-                className="w-full px-0 py-3 text-[16px] text-[#2a2a2a] placeholder:text-[#c5c5c5] focus:outline-none bg-transparent border-b border-[#E8E6E3] focus:border-[#A4AC96] transition-colors duration-500"
+                className="w-full px-0 py-3 text-[16px] text-foreground placeholder:text-[#c5c5c5] focus:outline-none bg-transparent border-b border-[#E8E6E3] focus:border-[#A4AC96] transition-colors duration-500"
                 style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 300,
@@ -211,7 +211,7 @@ export function Settings() {
 
             <div>
               <label
-                className="block text-[11px] text-[#9a9a9a] mb-3 uppercase tracking-widest"
+                className="block text-[11px] text-textSecondary mb-3 uppercase tracking-widest"
                 style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 400,
@@ -230,7 +230,7 @@ export function Settings() {
                   })
                 }
                 placeholder="Confirm new password"
-                className="w-full px-0 py-3 text-[16px] text-[#2a2a2a] placeholder:text-[#c5c5c5] focus:outline-none bg-transparent border-b border-[#E8E6E3] focus:border-[#A4AC96] transition-colors duration-500"
+                className="w-full px-0 py-3 text-[16px] text-foreground placeholder:text-[#c5c5c5] focus:outline-none bg-transparent border-b border-[#E8E6E3] focus:border-[#A4AC96] transition-colors duration-500"
                 style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 300,
@@ -241,7 +241,7 @@ export function Settings() {
             <div className="flex items-center gap-4 pt-4">
               <button
                 onClick={handleUpdatePassword}
-                className="w-fit h-fit px-4 py-3 bg-[#2a2a2a] text-[#FDFCFB] text-[13px] rounded-sm hover:opacity-80 transition-opacity duration-300 "
+                className="w-fit h-fit px-4 py-3 bg-foreground text-[#FDFCFB] text-[13px] rounded-sm hover:opacity-80 transition-opacity duration-300 "
               >
                 Update password
               </button>

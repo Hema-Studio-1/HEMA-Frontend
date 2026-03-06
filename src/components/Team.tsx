@@ -1,16 +1,16 @@
-import { useState } from 'react';
-import { Plus, Search, MoreVertical, ChevronDown } from 'lucide-react';
-import { AddTeamMemberDialog } from './AddTeamMemberDialog';
-import { CustomDropdown } from './CustomDropdown';
+import { ChevronDown, MoreVertical, Plus, Search } from "lucide-react";
+import { useState } from "react";
+import { AddTeamMemberDialog } from "./AddTeamMemberDialog";
+import { CustomDropdown } from "./CustomDropdown";
 
-type Tab = 'members' | 'tasks';
+type Tab = "members" | "tasks";
 
 interface TeamMember {
   id: string;
   name: string;
   email: string;
-  role: 'Admin' | 'Designer' | 'Reviewer' | 'Viewer';
-  status: 'Active' | 'Invited';
+  role: "Admin" | "Designer" | "Reviewer" | "Viewer";
+  status: "Active" | "Invited";
 }
 
 interface Task {
@@ -18,55 +18,103 @@ interface Task {
   title: string;
   relatedSpace: string;
   assignedBy: string;
-  status: 'Pending' | 'In progress' | 'Completed';
+  status: "Pending" | "In progress" | "Completed";
 }
 
 const mockMembers: TeamMember[] = [
-  { id: '1', name: 'Sarah Chen', email: 'sarah@studio.com', role: 'Admin', status: 'Active' },
-  { id: '2', name: 'Michael Torres', email: 'michael@studio.com', role: 'Designer', status: 'Active' },
-  { id: '3', name: 'Emma Wilson', email: 'emma@studio.com', role: 'Reviewer', status: 'Invited' },
+  {
+    id: "1",
+    name: "Sarah Chen",
+    email: "sarah@studio.com",
+    role: "Admin",
+    status: "Active",
+  },
+  {
+    id: "2",
+    name: "Michael Torres",
+    email: "michael@studio.com",
+    role: "Designer",
+    status: "Active",
+  },
+  {
+    id: "3",
+    name: "Emma Wilson",
+    email: "emma@studio.com",
+    role: "Reviewer",
+    status: "Invited",
+  },
 ];
 
 const mockTasks: Task[] = [
-  { id: '1', title: 'Review living room design', relatedSpace: 'Modern Minimal Living Room', assignedBy: 'Sarah Chen', status: 'Pending' },
-  { id: '2', title: 'Update material palette', relatedSpace: 'Japandi Bedroom', assignedBy: 'Sarah Chen', status: 'In progress' },
-  { id: '3', title: 'Finalize lighting setup', relatedSpace: 'Minimalist Kitchen', assignedBy: 'Michael Torres', status: 'Completed' },
+  {
+    id: "1",
+    title: "Review living room design",
+    relatedSpace: "Modern Minimal Living Room",
+    assignedBy: "Sarah Chen",
+    status: "Pending",
+  },
+  {
+    id: "2",
+    title: "Update material palette",
+    relatedSpace: "Japandi Bedroom",
+    assignedBy: "Sarah Chen",
+    status: "In progress",
+  },
+  {
+    id: "3",
+    title: "Finalize lighting setup",
+    relatedSpace: "Minimalist Kitchen",
+    assignedBy: "Michael Torres",
+    status: "Completed",
+  },
 ];
 
 export function Team() {
-  const [activeTab, setActiveTab] = useState<Tab>('members');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [roleFilter, setRoleFilter] = useState<string>('all');
+  const [activeTab, setActiveTab] = useState<Tab>("members");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState<string>("all");
   const [isAddMemberDialogOpen, setIsAddMemberDialogOpen] = useState(false);
   const [isAddRoleDialogOpen, setIsAddRoleDialogOpen] = useState(false);
-  const [newRoleName, setNewRoleName] = useState('');
+  const [newRoleName, setNewRoleName] = useState("");
   const [members, setMembers] = useState<TeamMember[]>(mockMembers);
   const [tasks, setTasks] = useState<Task[]>(mockTasks);
-  const [activeTaskStatusDropdown, setActiveTaskStatusDropdown] = useState<string | null>(null);
+  const [activeTaskStatusDropdown, setActiveTaskStatusDropdown] = useState<
+    string | null
+  >(null);
 
-  const filteredMembers = members.filter(member => {
-    const matchesSearch = member.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         member.email.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesRole = roleFilter === 'all' || member.role === roleFilter;
+  const filteredMembers = members.filter((member) => {
+    const matchesSearch =
+      member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      member.email.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesRole = roleFilter === "all" || member.role === roleFilter;
     return matchesSearch && matchesRole;
   });
 
-  const handleAddMember = (name: string, email: string, role: 'Admin' | 'Designer' | 'Reviewer' | 'Viewer') => {
+  const handleAddMember = (
+    name: string,
+    email: string,
+    role: "Admin" | "Designer" | "Reviewer" | "Viewer",
+  ) => {
     const newMember: TeamMember = {
       id: String(members.length + 1),
       name,
       email,
       role,
-      status: 'Invited'
+      status: "Invited",
     };
     setMembers([...members, newMember]);
     setIsAddMemberDialogOpen(false);
   };
 
-  const handleTaskStatusChange = (taskId: string, newStatus: 'Pending' | 'In progress' | 'Completed') => {
-    setTasks(tasks.map(task => 
-      task.id === taskId ? { ...task, status: newStatus } : task
-    ));
+  const handleTaskStatusChange = (
+    taskId: string,
+    newStatus: "Pending" | "In progress" | "Completed",
+  ) => {
+    setTasks(
+      tasks.map((task) =>
+        task.id === taskId ? { ...task, status: newStatus } : task,
+      ),
+    );
     setActiveTaskStatusDropdown(null);
   };
 
@@ -76,12 +124,10 @@ export function Team() {
       <div className="mb-12">
         <div className="flex items-start justify-between mb-4">
           <div>
-            <h1 className="text-3xl lg:text-4xl leading-[1.1] mb-3 tracking-tight text-[#2a2a2a]">
+            <h1 className="text-3xl lg:text-4xl leading-[1.1] mb-3 tracking-tight text-foreground">
               Team
             </h1>
-            <p
-              className="text-[#9a9a9a] leading-relaxed"
-            >
+            <p className="text-textSecondary leading-relaxed">
               Manage your team, roles, and assigned work
             </p>
           </div>
@@ -89,7 +135,7 @@ export function Team() {
           {activeTab === "members" && (
             <button
               onClick={() => setIsAddMemberDialogOpen(true)}
-              className="flex items-center gap-2 px-6 py-3 bg-[#2a2a2a] text-[#F7F5F2] text-[13px] hover:bg-[#3d3d3d] transition-colors duration-300"
+              className="flex items-center gap-2 px-6 py-3 bg-foreground text-background text-[13px] hover:bg-[#3d3d3d] transition-colors duration-300"
               style={{
                 fontFamily: "'Inter', sans-serif",
                 fontWeight: 400,
@@ -108,8 +154,8 @@ export function Team() {
             onClick={() => setActiveTab("members")}
             className={`pb-3 text-[13px] transition-all duration-300 ${
               activeTab === "members"
-                ? "text-[#2a2a2a] border-b-2 border-[#2a2a2a]"
-                : "text-[#9a9a9a] hover:text-[#626262]"
+                ? "text-foreground border-b-2 border-foreground"
+                : "text-textSecondary hover:text-[#626262]"
             }`}
             style={{
               fontFamily: "'Inter', sans-serif",
@@ -123,8 +169,8 @@ export function Team() {
             onClick={() => setActiveTab("tasks")}
             className={`pb-3 text-[13px] transition-all duration-300 ${
               activeTab === "tasks"
-                ? "text-[#2a2a2a] border-b-2 border-[#2a2a2a]"
-                : "text-[#9a9a9a] hover:text-[#626262]"
+                ? "text-foreground border-b-2 border-foreground"
+                : "text-textSecondary hover:text-[#626262]"
             }`}
             style={{
               fontFamily: "'Inter', sans-serif",
@@ -145,7 +191,7 @@ export function Team() {
             <div className="relative flex-1 max-w-md">
               <Search
                 size={16}
-                className="absolute left-0 top-1/2 -translate-y-1/2 text-[#9a9a9a]"
+                className="absolute left-0 top-1/2 -translate-y-1/2 text-textSecondary"
                 strokeWidth={1.5}
               />
               <input
@@ -153,7 +199,7 @@ export function Team() {
                 placeholder="Search by name or email..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-7 pr-4 py-2 text-[14px] text-[#2a2a2a] placeholder:text-[#c5c5c5] bg-transparent border-b border-[#E8E6E3] focus:border-[#A4AC96] focus:outline-none transition-colors duration-300"
+                className="w-full pl-7 pr-4 py-2 text-[14px] text-foreground placeholder:text-[#c5c5c5] bg-transparent border-b border-[#E8E6E3] focus:border-[#A4AC96] focus:outline-none transition-colors duration-300"
                 style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 300,
@@ -177,7 +223,7 @@ export function Team() {
               />
               <button
                 onClick={() => setIsAddRoleDialogOpen(true)}
-                className="flex items-center gap-1.5 text-[13px] text-[#626262] hover:text-[#2a2a2a] transition-colors duration-300"
+                className="flex items-center gap-1.5 text-[13px] text-[#626262] hover:text-foreground transition-colors duration-300"
                 style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 400,
@@ -196,7 +242,7 @@ export function Team() {
             <div className="grid grid-cols-12 gap-4 pb-3 mb-4 border-b border-[#E8E6E3]">
               <div className="col-span-5">
                 <p
-                  className="text-[11px] text-[#9a9a9a] uppercase tracking-widest"
+                  className="text-[11px] text-textSecondary uppercase tracking-widest"
                   style={{
                     fontFamily: "'Inter', sans-serif",
                     fontWeight: 400,
@@ -208,7 +254,7 @@ export function Team() {
               </div>
               <div className="col-span-3">
                 <p
-                  className="text-[11px] text-[#9a9a9a] uppercase tracking-widest"
+                  className="text-[11px] text-textSecondary uppercase tracking-widest"
                   style={{
                     fontFamily: "'Inter', sans-serif",
                     fontWeight: 400,
@@ -220,7 +266,7 @@ export function Team() {
               </div>
               <div className="col-span-3">
                 <p
-                  className="text-[11px] text-[#9a9a9a] uppercase tracking-widest"
+                  className="text-[11px] text-textSecondary uppercase tracking-widest"
                   style={{
                     fontFamily: "'Inter', sans-serif",
                     fontWeight: 400,
@@ -241,7 +287,7 @@ export function Team() {
               >
                 <div className="col-span-5">
                   <p
-                    className="text-[14px] text-[#2a2a2a] mb-1"
+                    className="text-[14px] text-foreground mb-1"
                     style={{
                       fontFamily: "'Inter', sans-serif",
                       fontWeight: 300,
@@ -250,7 +296,7 @@ export function Team() {
                     {member.name}
                   </p>
                   <p
-                    className="text-[12px] text-[#9a9a9a]"
+                    className="text-[12px] text-textSecondary"
                     style={{
                       fontFamily: "'Inter', sans-serif",
                       fontWeight: 300,
@@ -275,7 +321,7 @@ export function Team() {
                     className={`px-3 py-1 text-[11px] rounded-full ${
                       member.status === "Active"
                         ? "bg-[#A4AC96]/10 text-[#A4AC96]"
-                        : "bg-[#9a9a9a]/10 text-[#9a9a9a]"
+                        : "bg-text-secondary/10 text-textSecondary"
                     }`}
                     style={{
                       fontFamily: "'Inter', sans-serif",
@@ -290,7 +336,7 @@ export function Team() {
                   <button className="p-2 hover:bg-[#E8E6E3] rounded-sm transition-colors duration-300">
                     <MoreVertical
                       size={14}
-                      className="text-[#9a9a9a]"
+                      className="text-textSecondary"
                       strokeWidth={1.5}
                     />
                   </button>
@@ -313,7 +359,7 @@ export function Team() {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <h3
-                    className="text-[15px] text-[#2a2a2a] mb-2"
+                    className="text-[15px] text-foreground mb-2"
                     style={{
                       fontFamily: "'Inter', sans-serif",
                       fontWeight: 400,
@@ -323,7 +369,7 @@ export function Team() {
                   </h3>
                   <div className="flex items-center gap-4">
                     <p
-                      className="text-[12px] text-[#9a9a9a]"
+                      className="text-[12px] text-textSecondary"
                       style={{
                         fontFamily: "'Inter', sans-serif",
                         fontWeight: 300,
@@ -332,7 +378,7 @@ export function Team() {
                       Space: {task.relatedSpace}
                     </p>
                     <p
-                      className="text-[12px] text-[#9a9a9a]"
+                      className="text-[12px] text-textSecondary"
                       style={{
                         fontFamily: "'Inter', sans-serif",
                         fontWeight: 300,
@@ -355,7 +401,7 @@ export function Team() {
                         ? "bg-[#A4AC96]/10 text-[#A4AC96]"
                         : task.status === "In progress"
                           ? "bg-[#EFEDE9] text-[#626262]"
-                          : "bg-[#9a9a9a]/10 text-[#9a9a9a]"
+                          : "bg-text-secondary/10 text-textSecondary"
                     }`}
                     style={{
                       fontFamily: "'Inter', sans-serif",
@@ -378,7 +424,7 @@ export function Team() {
                         onClick={() => setActiveTaskStatusDropdown(null)}
                       />
                       <div
-                        className="absolute right-0 top-full mt-2 min-w-[140px] bg-[#F7F5F2] border border-[#E8E6E3] rounded-md overflow-hidden z-20"
+                        className="absolute right-0 top-full mt-2 min-w-[140px] bg-background border border-[#E8E6E3] rounded-md overflow-hidden z-20"
                         style={{
                           boxShadow: "0 4px 12px rgba(0, 0, 0, 0.06)",
                         }}
@@ -393,8 +439,8 @@ export function Team() {
                               }}
                               className={`block w-full px-4 py-2.5 text-left text-[13px] transition-all duration-200 relative ${
                                 task.status === status
-                                  ? "bg-[#EFEDE9] text-[#2a2a2a]"
-                                  : "text-[#626262] hover:bg-[#EFEDE9]/50 hover:text-[#2a2a2a]"
+                                  ? "bg-[#EFEDE9] text-foreground"
+                                  : "text-[#626262] hover:bg-[#EFEDE9]/50 hover:text-foreground"
                               }`}
                               style={{
                                 fontFamily: "'Inter', sans-serif",
@@ -435,14 +481,14 @@ export function Team() {
         <>
           {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-[#2a2a2a]/20 backdrop-blur-sm z-40 transition-opacity duration-500"
+            className="fixed inset-0 bg-foreground/20 backdrop-blur-sm z-40 transition-opacity duration-500"
             onClick={() => setIsAddRoleDialogOpen(false)}
           />
 
           {/* Dialog */}
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div
-              className="bg-[#F7F5F2] rounded-md w-full max-w-md"
+              className="bg-background rounded-md w-full max-w-md"
               style={{
                 boxShadow: "0 4px 24px rgba(0, 0, 0, 0.08)",
               }}
@@ -451,7 +497,7 @@ export function Team() {
               {/* Header */}
               <div className="flex items-center justify-between p-8 pb-6">
                 <h2
-                  className="text-[24px] text-[#2a2a2a]"
+                  className="text-[24px] text-foreground"
                   style={{
                     fontFamily: "'Playfair Display', serif",
                     fontWeight: 300,
@@ -462,7 +508,7 @@ export function Team() {
                 </h2>
                 <button
                   onClick={() => setIsAddRoleDialogOpen(false)}
-                  className="p-2 text-[#9a9a9a] hover:text-[#2a2a2a] transition-colors duration-300"
+                  className="p-2 text-textSecondary hover:text-foreground transition-colors duration-300"
                 >
                   <Plus size={20} strokeWidth={1.5} className="rotate-45" />
                 </button>
@@ -473,7 +519,7 @@ export function Team() {
                 {/* Role Name */}
                 <div>
                   <label
-                    className="block text-[11px] text-[#9a9a9a] mb-2 uppercase tracking-widest"
+                    className="block text-[11px] text-textSecondary mb-2 uppercase tracking-widest"
                     style={{
                       fontFamily: "'Inter', sans-serif",
                       fontWeight: 400,
@@ -487,14 +533,14 @@ export function Team() {
                     value={newRoleName}
                     onChange={(e) => setNewRoleName(e.target.value)}
                     placeholder="e.g. Project Manager"
-                    className="w-full px-0 py-3 text-[15px] text-[#2a2a2a] placeholder:text-[#c5c5c5] bg-transparent border-b border-[#E8E6E3] focus:border-[#A4AC96] focus:outline-none transition-colors duration-300"
+                    className="w-full px-0 py-3 text-[15px] text-foreground placeholder:text-[#c5c5c5] bg-transparent border-b border-[#E8E6E3] focus:border-[#A4AC96] focus:outline-none transition-colors duration-300"
                     style={{
                       fontFamily: "'Inter', sans-serif",
                       fontWeight: 300,
                     }}
                   />
                   <p
-                    className="mt-3 text-[12px] text-[#9a9a9a]"
+                    className="mt-3 text-[12px] text-textSecondary"
                     style={{
                       fontFamily: "'Inter', sans-serif",
                       fontWeight: 300,
@@ -509,7 +555,7 @@ export function Team() {
                 <div className="flex gap-3 pt-4">
                   <button
                     onClick={() => setIsAddRoleDialogOpen(false)}
-                    className="flex-1 px-6 py-3 text-[13px] text-[#626262] hover:text-[#2a2a2a] border border-[#E8E6E3] hover:border-[#2a2a2a] transition-colors duration-300 rounded-md"
+                    className="flex-1 px-6 py-3 text-[13px] text-[#626262] hover:text-foreground border border-[#E8E6E3] hover:border-foreground transition-colors duration-300 rounded-md"
                     style={{
                       fontFamily: "'Inter', sans-serif",
                       fontWeight: 400,
@@ -524,7 +570,7 @@ export function Team() {
                       setIsAddRoleDialogOpen(false);
                       setNewRoleName("");
                     }}
-                    className="flex-1 px-6 py-3 bg-[#2a2a2a] text-[#F7F5F2] text-[13px] hover:bg-[#3d3d3d] transition-colors duration-300 rounded-md"
+                    className="flex-1 px-6 py-3 bg-foreground text-background text-[13px] hover:bg-[#3d3d3d] transition-colors duration-300 rounded-md"
                     style={{
                       fontFamily: "'Inter', sans-serif",
                       fontWeight: 400,

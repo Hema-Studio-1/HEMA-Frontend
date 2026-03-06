@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { X, Upload } from 'lucide-react';
+import { Upload, X } from "lucide-react";
+import { useState } from "react";
 
 interface CreateSpaceDialogProps {
   isOpen: boolean;
@@ -7,9 +7,13 @@ interface CreateSpaceDialogProps {
   onContinue: (spaceName: string, description?: string, files?: File[]) => void;
 }
 
-export function CreateSpaceDialog({ isOpen, onClose, onContinue }: CreateSpaceDialogProps) {
-  const [spaceName, setSpaceName] = useState('');
-  const [description, setDescription] = useState('');
+export function CreateSpaceDialog({
+  isOpen,
+  onClose,
+  onContinue,
+}: CreateSpaceDialogProps) {
+  const [spaceName, setSpaceName] = useState("");
+  const [description, setDescription] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -20,17 +24,21 @@ export function CreateSpaceDialog({ isOpen, onClose, onContinue }: CreateSpaceDi
 
   const handleContinue = () => {
     if (!spaceName.trim()) return;
-    onContinue(spaceName, description || undefined, uploadedFiles.length > 0 ? uploadedFiles : undefined);
-    
+    onContinue(
+      spaceName,
+      description || undefined,
+      uploadedFiles.length > 0 ? uploadedFiles : undefined,
+    );
+
     // Reset form
-    setSpaceName('');
-    setDescription('');
+    setSpaceName("");
+    setDescription("");
     setUploadedFiles([]);
   };
 
   const handleClose = () => {
-    setSpaceName('');
-    setDescription('');
+    setSpaceName("");
+    setDescription("");
     setUploadedFiles([]);
     onClose();
   };
@@ -40,35 +48,35 @@ export function CreateSpaceDialog({ isOpen, onClose, onContinue }: CreateSpaceDi
   return (
     <>
       {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-[#2a2a2a]/20 backdrop-blur-sm z-40 transition-opacity duration-500"
+      <div
+        className="fixed inset-0 bg-foreground/20 backdrop-blur-sm z-40 transition-opacity duration-500"
         onClick={handleClose}
       />
 
       {/* Dialog */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div 
-          className="bg-[#F7F5F2] rounded-sm w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+        <div
+          className="bg-background rounded-sm w-full max-w-2xl max-h-[90vh] overflow-y-auto"
           style={{
-            boxShadow: '0 4px 24px rgba(0, 0, 0, 0.08)'
+            boxShadow: "0 4px 24px rgba(0, 0, 0, 0.08)",
           }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
           <div className="flex items-center justify-between p-8 pb-6">
             <h2
-              className="text-[24px] text-[#2a2a2a]"
-              style={{ 
+              className="text-[24px] text-foreground"
+              style={{
                 fontFamily: "'Playfair Display', serif",
                 fontWeight: 300,
-                letterSpacing: '-0.01em'
+                letterSpacing: "-0.01em",
               }}
             >
               Create a new space
             </h2>
             <button
               onClick={handleClose}
-              className="p-2 text-[#9a9a9a] hover:text-[#2a2a2a] transition-colors duration-300"
+              className="p-2 text-textSecondary hover:text-foreground transition-colors duration-300"
             >
               <X size={20} strokeWidth={1.5} />
             </button>
@@ -78,25 +86,25 @@ export function CreateSpaceDialog({ isOpen, onClose, onContinue }: CreateSpaceDi
           <div className="px-8 pb-8 space-y-8">
             {/* Space Name */}
             <div>
-              <label 
-                className="block text-[11px] text-[#9a9a9a] mb-3 uppercase tracking-widest"
-                style={{ 
+              <label
+                className="block text-[11px] text-textSecondary mb-3 uppercase tracking-widest"
+                style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 400,
-                  letterSpacing: '0.1em'
+                  letterSpacing: "0.1em",
                 }}
               >
-                Space Name <span className="text-[#2a2a2a]">*</span>
+                Space Name <span className="text-foreground">*</span>
               </label>
               <input
                 type="text"
                 value={spaceName}
                 onChange={(e) => setSpaceName(e.target.value)}
                 placeholder="e.g. Living Room, Master Bedroom"
-                className="w-full px-0 py-3 text-[16px] text-[#2a2a2a] placeholder:text-[#c5c5c5] focus:outline-none bg-transparent border-b border-[#E8E6E3] focus:border-[#A4AC96] transition-colors duration-500"
-                style={{ 
+                className="w-full px-0 py-3 text-[16px] text-foreground placeholder:text-[#c5c5c5] focus:outline-none bg-transparent border-b border-[#E8E6E3] focus:border-[#A4AC96] transition-colors duration-500"
+                style={{
                   fontFamily: "'Inter', sans-serif",
-                  fontWeight: 300
+                  fontWeight: 300,
                 }}
                 autoFocus
               />
@@ -104,12 +112,12 @@ export function CreateSpaceDialog({ isOpen, onClose, onContinue }: CreateSpaceDi
 
             {/* Description */}
             <div>
-              <label 
-                className="block text-[11px] text-[#9a9a9a] mb-3 uppercase tracking-widest"
-                style={{ 
+              <label
+                className="block text-[11px] text-textSecondary mb-3 uppercase tracking-widest"
+                style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 400,
-                  letterSpacing: '0.1em'
+                  letterSpacing: "0.1em",
                 }}
               >
                 Description (Optional)
@@ -119,28 +127,28 @@ export function CreateSpaceDialog({ isOpen, onClose, onContinue }: CreateSpaceDi
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Describe the space or intent (optional)"
                 rows={3}
-                className="w-full px-0 py-3 text-[16px] text-[#2a2a2a] placeholder:text-[#c5c5c5] resize-none focus:outline-none bg-transparent border-b border-[#E8E6E3] focus:border-[#A4AC96] transition-colors duration-500"
-                style={{ 
+                className="w-full px-0 py-3 text-[16px] text-foreground placeholder:text-[#c5c5c5] resize-none focus:outline-none bg-transparent border-b border-[#E8E6E3] focus:border-[#A4AC96] transition-colors duration-500"
+                style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 300,
-                  lineHeight: '1.8'
+                  lineHeight: "1.8",
                 }}
               />
             </div>
 
             {/* Upload Section */}
             <div>
-              <label 
-                className="block text-[11px] text-[#9a9a9a] mb-3 uppercase tracking-widest"
-                style={{ 
+              <label
+                className="block text-[11px] text-textSecondary mb-3 uppercase tracking-widest"
+                style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 400,
-                  letterSpacing: '0.1em'
+                  letterSpacing: "0.1em",
                 }}
               >
                 Upload Floor Plan or Reference (Optional)
               </label>
-              
+
               <label className="block cursor-pointer">
                 <input
                   type="file"
@@ -149,46 +157,45 @@ export function CreateSpaceDialog({ isOpen, onClose, onContinue }: CreateSpaceDi
                   onChange={handleFileUpload}
                   className="hidden"
                 />
-                <div 
-                  className="border border-dashed border-[#E8E6E3] rounded-sm p-8 text-center hover:border-[#A4AC96] transition-colors duration-500"
-                >
-                  <Upload 
-                    size={24} 
-                    className="mx-auto mb-3 text-[#c5c5c5]" 
-                    strokeWidth={1.5} 
+                <div className="border border-dashed border-[#E8E6E3] rounded-sm p-8 text-center hover:border-[#A4AC96] transition-colors duration-500">
+                  <Upload
+                    size={24}
+                    className="mx-auto mb-3 text-[#c5c5c5]"
+                    strokeWidth={1.5}
                   />
-                  <p 
-                    className="text-[13px] text-[#9a9a9a] mb-1"
-                    style={{ 
+                  <p
+                    className="text-[13px] text-textSecondary mb-1"
+                    style={{
                       fontFamily: "'Inter', sans-serif",
-                      fontWeight: 300
+                      fontWeight: 300,
                     }}
                   >
-                    {uploadedFiles.length > 0 
-                      ? `${uploadedFiles.length} file(s) selected` 
-                      : 'Click to upload or drag files'}
+                    {uploadedFiles.length > 0
+                      ? `${uploadedFiles.length} file(s) selected`
+                      : "Click to upload or drag files"}
                   </p>
-                  <p 
+                  <p
                     className="text-[11px] text-[#c5c5c5]"
-                    style={{ 
+                    style={{
                       fontFamily: "'Inter', sans-serif",
-                      fontWeight: 300
+                      fontWeight: 300,
                     }}
                   >
-                    Floor plans help AI understand layout, but this step is optional
+                    Floor plans help AI understand layout, but this step is
+                    optional
                   </p>
                 </div>
               </label>
 
               {uploadedFiles.length > 0 && (
-                <p 
-                  className="mt-2 text-[11px] text-[#9a9a9a]"
-                  style={{ 
+                <p
+                  className="mt-2 text-[11px] text-textSecondary"
+                  style={{
                     fontFamily: "'Inter', sans-serif",
-                    fontWeight: 300
+                    fontWeight: 300,
                   }}
                 >
-                  {uploadedFiles.map(f => f.name).join(', ')}
+                  {uploadedFiles.map((f) => f.name).join(", ")}
                 </p>
               )}
             </div>
@@ -197,11 +204,11 @@ export function CreateSpaceDialog({ isOpen, onClose, onContinue }: CreateSpaceDi
             <div className="flex items-center justify-end gap-4 pt-4">
               <button
                 onClick={handleClose}
-                className="text-[13px] text-[#9a9a9a] hover:text-[#626262] transition-colors duration-300"
-                style={{ 
+                className="text-[13px] text-textSecondary hover:text-[#626262] transition-colors duration-300"
+                style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 300,
-                  letterSpacing: '0.02em'
+                  letterSpacing: "0.02em",
                 }}
               >
                 Cancel
@@ -209,11 +216,11 @@ export function CreateSpaceDialog({ isOpen, onClose, onContinue }: CreateSpaceDi
               <button
                 onClick={handleContinue}
                 disabled={!spaceName.trim()}
-                className="px-8 py-3 bg-[#2a2a2a] text-[#F7F5F2] text-[13px] hover:bg-[#3d3d3d] transition-colors duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
-                style={{ 
+                className="px-8 py-3 bg-foreground text-background text-[13px] hover:bg-[#3d3d3d] transition-colors duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
+                style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 400,
-                  letterSpacing: '0.03em'
+                  letterSpacing: "0.03em",
                 }}
               >
                 Continue

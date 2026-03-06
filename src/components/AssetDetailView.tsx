@@ -1,12 +1,21 @@
-import { X, Heart, Trash2, RotateCcw, Image as ImageIcon, MessageSquare, ArrowUpCircle, ChevronDown } from 'lucide-react';
-import { useState } from 'react';
-import { DeleteConfirmDialog } from './DeleteConfirmDialog';
+import {
+  ArrowUpCircle,
+  ChevronDown,
+  Heart,
+  Image as ImageIcon,
+  MessageSquare,
+  RotateCcw,
+  Trash2,
+  X,
+} from "lucide-react";
+import { useState } from "react";
+import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
 
 interface Asset {
   id: string;
   name: string;
   category: string;
-  type: 'Furniture' | 'Lighting' | 'Kitchen' | 'Decor' | 'Accessories';
+  type: "Furniture" | "Lighting" | "Kitchen" | "Decor" | "Accessories";
   imageUrl: string;
   isLiked: boolean;
   description?: string;
@@ -27,17 +36,23 @@ interface DropdownProps {
   placeholder?: string;
 }
 
-function Dropdown({ label, value, options, onChange, placeholder = 'Select...' }: DropdownProps) {
+function Dropdown({
+  label,
+  value,
+  options,
+  onChange,
+  placeholder = "Select...",
+}: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <div className="relative">
-      <label 
-        className="block text-[11px] text-[#9a9a9a] mb-2"
-        style={{ 
+      <label
+        className="block text-[11px] text-textSecondary mb-2"
+        style={{
           fontFamily: "'Inter', sans-serif",
           fontWeight: 300,
-          letterSpacing: '0.02em'
+          letterSpacing: "0.02em",
         }}
       >
         {label}
@@ -51,28 +66,28 @@ function Dropdown({ label, value, options, onChange, placeholder = 'Select...' }
           style={{
             fontFamily: "'Inter', sans-serif",
             fontWeight: 300,
-            color: value ? '#2a2a2a' : '#9a9a9a'
+            color: value ? "var(--foreground)" : "var(--text-secondary)",
           }}
         >
           {value || placeholder}
         </span>
-        <ChevronDown 
-          size={14} 
-          className={`text-[#626262] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
-          strokeWidth={1.5} 
+        <ChevronDown
+          size={14}
+          className={`text-[#626262] transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+          strokeWidth={1.5}
         />
       </button>
-      
+
       {isOpen && (
         <>
-          <div 
-            className="fixed inset-0 z-10" 
-            onClick={() => setIsOpen(false)} 
+          <div
+            className="fixed inset-0 z-10"
+            onClick={() => setIsOpen(false)}
           />
-          <div 
+          <div
             className="absolute top-full left-0 right-0 mt-1 bg-[#FDFCFB] border border-[#E8E6E3] rounded-sm z-20 max-h-64 overflow-y-auto"
             style={{
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)'
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
             }}
           >
             {options.map((option) => (
@@ -82,14 +97,14 @@ function Dropdown({ label, value, options, onChange, placeholder = 'Select...' }
                   onChange(option);
                   setIsOpen(false);
                 }}
-                className="w-full px-3 py-2.5 text-left hover:bg-[#F7F5F2] transition-colors duration-200"
+                className="w-full px-3 py-2.5 text-left hover:bg-background transition-colors duration-200"
               >
                 <span
                   className="text-[13px]"
                   style={{
                     fontFamily: "'Inter', sans-serif",
                     fontWeight: value === option ? 400 : 300,
-                    color: value === option ? '#2a2a2a' : '#626262'
+                    color: value === option ? "var(--foreground)" : "#626262",
                   }}
                 >
                   {option}
@@ -103,15 +118,21 @@ function Dropdown({ label, value, options, onChange, placeholder = 'Select...' }
   );
 }
 
-export function AssetDetailView({ asset, onClose, onToggleLike, onDelete }: AssetDetailViewProps) {
+export function AssetDetailView({
+  asset,
+  onClose,
+  onToggleLike,
+  onDelete,
+}: AssetDetailViewProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  
+
   // Dropdown states
-  const [selectedLighting, setSelectedLighting] = useState('');
-  const [selectedPointOfView, setSelectedPointOfView] = useState('');
-  const [selectedStyle, setSelectedStyle] = useState('');
-  const [selectedRenderMode, setSelectedRenderMode] = useState('Precise render');
-  const [selectedArchContext, setSelectedArchContext] = useState('');
+  const [selectedLighting, setSelectedLighting] = useState("");
+  const [selectedPointOfView, setSelectedPointOfView] = useState("");
+  const [selectedStyle, setSelectedStyle] = useState("");
+  const [selectedRenderMode, setSelectedRenderMode] =
+    useState("Precise render");
+  const [selectedArchContext, setSelectedArchContext] = useState("");
 
   const handleDelete = () => {
     onDelete(asset.id);
@@ -123,70 +144,70 @@ export function AssetDetailView({ asset, onClose, onToggleLike, onDelete }: Asse
   };
 
   const lightingOptions = [
-    'Morning light',
-    'Midday',
-    'Overcast light',
-    'Cloudy',
-    'Sunset',
-    'Night lighting',
-    'Night lighting with stars'
+    "Morning light",
+    "Midday",
+    "Overcast light",
+    "Cloudy",
+    "Sunset",
+    "Night lighting",
+    "Night lighting with stars",
   ];
 
   const pointOfViewOptions = [
-    'Side view',
-    'Front view',
-    'Top view',
-    'Low-angle (worm\'s-eye) view',
-    'Close-up of the main subject',
-    'Detail view (small design detail)',
-    'Multiple view grid'
+    "Side view",
+    "Front view",
+    "Top view",
+    "Low-angle (worm's-eye) view",
+    "Close-up of the main subject",
+    "Detail view (small design detail)",
+    "Multiple view grid",
   ];
 
   const styleOptions = [
-    'Art deco',
-    'Biophilic / Nature-Forward',
-    'Bohemian',
-    'Haussmannian',
-    'Industrial',
-    'Japandi',
-    'Mediterranean',
-    'Midcentury modern interior',
-    'Rustic',
-    'Scandinavian / Soft Minimalism'
+    "Art deco",
+    "Biophilic / Nature-Forward",
+    "Bohemian",
+    "Haussmannian",
+    "Industrial",
+    "Japandi",
+    "Mediterranean",
+    "Midcentury modern interior",
+    "Rustic",
+    "Scandinavian / Soft Minimalism",
   ];
 
   const archContextOptions = [
-    'Precise render',
-    'Provence – South of France',
-    'Mediterranean sea',
-    'Puglia – Italy',
-    'Pine forest',
-    'In a desert',
-    'In Iceland',
-    'Iceland – snow',
-    'In nature – at night',
-    'In nature – at night, Milky Way',
-    'Tokyo'
+    "Precise render",
+    "Provence – South of France",
+    "Mediterranean sea",
+    "Puglia – Italy",
+    "Pine forest",
+    "In a desert",
+    "In Iceland",
+    "Iceland – snow",
+    "In nature – at night",
+    "In nature – at night, Milky Way",
+    "Tokyo",
   ];
 
   return (
     <>
       {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-[#2a2a2a]/10 backdrop-blur-sm z-[60] transition-opacity duration-500"
+      <div
+        className="fixed inset-0 bg-foreground/10 backdrop-blur-sm z-[60] transition-opacity duration-500"
         onClick={onClose}
       />
 
       {/* Modal - Full Width & Height */}
-      <div 
+      <div
         className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] h-[90vh] bg-[#FDFCFB] rounded-sm z-[60] overflow-hidden flex"
         style={{
-          maxWidth: '1400px',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)'
+          maxWidth: "1400px",
+          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.08)",
         }}
       >
         {/* Left Side - Large Image (60-65%) */}
-        <div className="w-[65%] bg-[#F7F5F2] p-12 flex items-center justify-center relative">
+        <div className="w-[65%] bg-background p-12 flex items-center justify-center relative">
           <img
             src={asset.imageUrl}
             alt={asset.name}
@@ -199,29 +220,29 @@ export function AssetDetailView({ asset, onClose, onToggleLike, onDelete }: Asse
           {/* Minimal Header with Actions */}
           <div className="px-12 py-8 border-b border-[#E8E6E3] flex items-start justify-between">
             <div className="flex-1 pr-4">
-              <h3 
-                className="text-[28px] text-[#2a2a2a] mb-3"
-                style={{ 
+              <h3
+                className="text-[28px] text-foreground mb-3"
+                style={{
                   fontFamily: "'Playfair Display', serif",
                   fontWeight: 300,
-                  letterSpacing: '-0.01em',
-                  lineHeight: '1.2'
+                  letterSpacing: "-0.01em",
+                  lineHeight: "1.2",
                 }}
               >
                 {asset.name}
               </h3>
               <span
-                className="inline-block px-2 py-1 text-[10px] bg-[#F7F5F2] text-[#626262] rounded-sm"
+                className="inline-block px-2 py-1 text-[10px] bg-background text-[#626262] rounded-sm"
                 style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 300,
-                  letterSpacing: '0.05em'
+                  letterSpacing: "0.05em",
                 }}
               >
                 {asset.type}
               </span>
             </div>
-            
+
             {/* Top-right Actions */}
             <div className="flex items-center gap-1 flex-shrink-0">
               <button
@@ -229,12 +250,12 @@ export function AssetDetailView({ asset, onClose, onToggleLike, onDelete }: Asse
                 className="p-2 hover:opacity-60 transition-opacity duration-300"
                 title={asset.isLiked ? "Unlike" : "Like"}
               >
-                <Heart 
-                  size={18} 
+                <Heart
+                  size={18}
                   className={`transition-colors duration-300 ${
-                    asset.isLiked 
-                      ? 'text-[#2a2a2a] fill-current' 
-                      : 'text-[#626262]'
+                    asset.isLiked
+                      ? "text-foreground fill-current"
+                      : "text-[#626262]"
                   }`}
                   strokeWidth={1.5}
                 />
@@ -244,7 +265,11 @@ export function AssetDetailView({ asset, onClose, onToggleLike, onDelete }: Asse
                 className="p-2 hover:opacity-60 transition-opacity duration-300"
                 title="Delete"
               >
-                <Trash2 size={18} className="text-[#626262]" strokeWidth={1.5} />
+                <Trash2
+                  size={18}
+                  className="text-[#626262]"
+                  strokeWidth={1.5}
+                />
               </button>
               <button
                 onClick={onClose}
@@ -259,17 +284,17 @@ export function AssetDetailView({ asset, onClose, onToggleLike, onDelete }: Asse
           <div className="flex-1 overflow-y-auto px-12 py-8">
             {/* Section A - Refine */}
             <div className="mb-8">
-              <h4 
-                className="text-[12px] text-[#2a2a2a] mb-5"
-                style={{ 
+              <h4
+                className="text-[12px] text-foreground mb-5"
+                style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 400,
-                  letterSpacing: '0.02em'
+                  letterSpacing: "0.02em",
                 }}
               >
                 Refine
               </h4>
-              
+
               <div className="space-y-4">
                 {/* A1 - Change Lighting */}
                 <Dropdown
@@ -300,43 +325,45 @@ export function AssetDetailView({ asset, onClose, onToggleLike, onDelete }: Asse
 
                 {/* A4 - Smart Render Mode (Segmented Control) */}
                 <div>
-                  <label 
-                    className="block text-[11px] text-[#9a9a9a] mb-2"
-                    style={{ 
+                  <label
+                    className="block text-[11px] text-textSecondary mb-2"
+                    style={{
                       fontFamily: "'Inter', sans-serif",
                       fontWeight: 300,
-                      letterSpacing: '0.02em'
+                      letterSpacing: "0.02em",
                     }}
                   >
                     Render mode
                   </label>
                   <div className="flex border border-[#E8E6E3] rounded-sm overflow-hidden">
                     <button
-                      onClick={() => setSelectedRenderMode('Precise render')}
+                      onClick={() => setSelectedRenderMode("Precise render")}
                       className={`flex-1 px-3 py-2.5 text-[13px] transition-colors duration-300 ${
-                        selectedRenderMode === 'Precise render'
-                          ? 'bg-[#F7F5F2] text-[#2a2a2a]'
-                          : 'bg-[#FDFCFB] text-[#626262] hover:bg-[#F7F5F2]/50'
+                        selectedRenderMode === "Precise render"
+                          ? "bg-background text-foreground"
+                          : "bg-[#FDFCFB] text-[#626262] hover:bg-background/50"
                       }`}
                       style={{
                         fontFamily: "'Inter', sans-serif",
-                        fontWeight: selectedRenderMode === 'Precise render' ? 400 : 300,
-                        letterSpacing: '0.01em'
+                        fontWeight:
+                          selectedRenderMode === "Precise render" ? 400 : 300,
+                        letterSpacing: "0.01em",
                       }}
                     >
                       Precise render
                     </button>
                     <button
-                      onClick={() => setSelectedRenderMode('Creative render')}
+                      onClick={() => setSelectedRenderMode("Creative render")}
                       className={`flex-1 px-3 py-2.5 text-[13px] border-l border-[#E8E6E3] transition-colors duration-300 ${
-                        selectedRenderMode === 'Creative render'
-                          ? 'bg-[#F7F5F2] text-[#2a2a2a]'
-                          : 'bg-[#FDFCFB] text-[#626262] hover:bg-[#F7F5F2]/50'
+                        selectedRenderMode === "Creative render"
+                          ? "bg-background text-foreground"
+                          : "bg-[#FDFCFB] text-[#626262] hover:bg-background/50"
                       }`}
                       style={{
                         fontFamily: "'Inter', sans-serif",
-                        fontWeight: selectedRenderMode === 'Creative render' ? 400 : 300,
-                        letterSpacing: '0.01em'
+                        fontWeight:
+                          selectedRenderMode === "Creative render" ? 400 : 300,
+                        letterSpacing: "0.01em",
                       }}
                     >
                       Creative render
@@ -357,28 +384,32 @@ export function AssetDetailView({ asset, onClose, onToggleLike, onDelete }: Asse
 
             {/* Section B - Enhance */}
             <div className="mb-8 pb-8 border-b border-[#E8E6E3]">
-              <h4 
-                className="text-[12px] text-[#2a2a2a] mb-4"
-                style={{ 
+              <h4
+                className="text-[12px] text-foreground mb-4"
+                style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 400,
-                  letterSpacing: '0.02em'
+                  letterSpacing: "0.02em",
                 }}
               >
                 Enhance
               </h4>
-              
+
               <button
-                onClick={() => console.log('Upscale 4K')}
-                className="w-full px-4 py-2.5 bg-[#FDFCFB] border border-[#E8E6E3] rounded-sm text-left flex items-center gap-2 hover:border-[#c5c5c5] hover:bg-[#F7F5F2] transition-colors duration-300"
+                onClick={() => console.log("Upscale 4K")}
+                className="w-full px-4 py-2.5 bg-[#FDFCFB] border border-[#E8E6E3] rounded-sm text-left flex items-center gap-2 hover:border-[#c5c5c5] hover:bg-background transition-colors duration-300"
               >
-                <ArrowUpCircle size={14} className="text-[#626262]" strokeWidth={1.5} />
+                <ArrowUpCircle
+                  size={14}
+                  className="text-[#626262]"
+                  strokeWidth={1.5}
+                />
                 <span
-                  className="text-[13px] text-[#2a2a2a]"
+                  className="text-[13px] text-foreground"
                   style={{
                     fontFamily: "'Inter', sans-serif",
                     fontWeight: 300,
-                    letterSpacing: '0.01em'
+                    letterSpacing: "0.01em",
                   }}
                 >
                   Upscale 4K
@@ -388,66 +419,78 @@ export function AssetDetailView({ asset, onClose, onToggleLike, onDelete }: Asse
 
             {/* Section C - Utilities */}
             <div>
-              <h4 
-                className="text-[12px] text-[#2a2a2a] mb-4"
-                style={{ 
+              <h4
+                className="text-[12px] text-foreground mb-4"
+                style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 400,
-                  letterSpacing: '0.02em'
+                  letterSpacing: "0.02em",
                 }}
               >
                 Utilities
               </h4>
-              
+
               <div className="flex flex-wrap gap-2">
                 <button
-                  onClick={() => console.log('Rerun')}
-                  className="px-3 py-2 bg-[#FDFCFB] border border-[#E8E6E3] rounded-sm flex items-center gap-2 hover:border-[#c5c5c5] hover:bg-[#F7F5F2] transition-colors duration-300"
+                  onClick={() => console.log("Rerun")}
+                  className="px-3 py-2 bg-[#FDFCFB] border border-[#E8E6E3] rounded-sm flex items-center gap-2 hover:border-[#c5c5c5] hover:bg-background transition-colors duration-300"
                   title="Rerun"
                 >
-                  <RotateCcw size={12} className="text-[#626262]" strokeWidth={1.5} />
+                  <RotateCcw
+                    size={12}
+                    className="text-[#626262]"
+                    strokeWidth={1.5}
+                  />
                   <span
-                    className="text-[12px] text-[#2a2a2a]"
+                    className="text-[12px] text-foreground"
                     style={{
                       fontFamily: "'Inter', sans-serif",
                       fontWeight: 300,
-                      letterSpacing: '0.01em'
+                      letterSpacing: "0.01em",
                     }}
                   >
                     Rerun
                   </span>
                 </button>
-                
+
                 <button
-                  onClick={() => console.log('Replace image')}
-                  className="px-3 py-2 bg-[#FDFCFB] border border-[#E8E6E3] rounded-sm flex items-center gap-2 hover:border-[#c5c5c5] hover:bg-[#F7F5F2] transition-colors duration-300"
+                  onClick={() => console.log("Replace image")}
+                  className="px-3 py-2 bg-[#FDFCFB] border border-[#E8E6E3] rounded-sm flex items-center gap-2 hover:border-[#c5c5c5] hover:bg-background transition-colors duration-300"
                   title="Replace image"
                 >
-                  <ImageIcon size={12} className="text-[#626262]" strokeWidth={1.5} />
+                  <ImageIcon
+                    size={12}
+                    className="text-[#626262]"
+                    strokeWidth={1.5}
+                  />
                   <span
-                    className="text-[12px] text-[#2a2a2a]"
+                    className="text-[12px] text-foreground"
                     style={{
                       fontFamily: "'Inter', sans-serif",
                       fontWeight: 300,
-                      letterSpacing: '0.01em'
+                      letterSpacing: "0.01em",
                     }}
                   >
                     Replace image
                   </span>
                 </button>
-                
+
                 <button
-                  onClick={() => console.log('Edit prompt')}
-                  className="px-3 py-2 bg-[#FDFCFB] border border-[#E8E6E3] rounded-sm flex items-center gap-2 hover:border-[#c5c5c5] hover:bg-[#F7F5F2] transition-colors duration-300"
+                  onClick={() => console.log("Edit prompt")}
+                  className="px-3 py-2 bg-[#FDFCFB] border border-[#E8E6E3] rounded-sm flex items-center gap-2 hover:border-[#c5c5c5] hover:bg-background transition-colors duration-300"
                   title="Edit prompt"
                 >
-                  <MessageSquare size={12} className="text-[#626262]" strokeWidth={1.5} />
+                  <MessageSquare
+                    size={12}
+                    className="text-[#626262]"
+                    strokeWidth={1.5}
+                  />
                   <span
-                    className="text-[12px] text-[#2a2a2a]"
+                    className="text-[12px] text-foreground"
                     style={{
                       fontFamily: "'Inter', sans-serif",
                       fontWeight: 300,
-                      letterSpacing: '0.01em'
+                      letterSpacing: "0.01em",
                     }}
                   >
                     Edit prompt

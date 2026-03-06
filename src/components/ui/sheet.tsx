@@ -1,14 +1,12 @@
 "use client";
 
-import * as React from "react";
 import * as SheetPrimitive from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
+import type * as React from "react";
 
 import { cn } from "./utils";
 
-function Sheet({
-  ...props
-}: React.ComponentProps<typeof SheetPrimitive.Root>) {
+function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />;
 }
 
@@ -38,8 +36,8 @@ function SheetOverlay({
     <SheetPrimitive.Overlay
       data-slot="sheet-overlay"
       className={cn(
-        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-[#2a2a2a]/5 backdrop-blur-sm transition-opacity duration-500",
-        className
+        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-foreground/5 backdrop-blur-sm transition-opacity duration-500",
+        className,
       )}
       {...props}
     />
@@ -72,7 +70,7 @@ function SheetContent({
             "data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top inset-x-0 top-0 h-auto max-h-[90vh] border-b border-[#E8E6E3]",
           side === "bottom" &&
             "data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom inset-x-0 bottom-0 h-auto max-h-[90vh] border-t border-[#E8E6E3]",
-          className
+          className,
         )}
         style={
           side === "right"
@@ -86,7 +84,7 @@ function SheetContent({
         {children}
         {!hideCloseButton && (
           <SheetPrimitive.Close
-            className="absolute top-10 right-8 z-10 text-[#626262] opacity-100 transition-opacity duration-300 hover:opacity-60 focus:outline-none focus:ring-2 focus:ring-[#2a2a2a]/20 focus:ring-offset-0 disabled:pointer-events-none"
+            className="absolute top-10 right-8 z-10 text-[#626262] opacity-100 transition-opacity duration-300 hover:opacity-60 focus:outline-none focus:ring-2 focus:ring-foreground/20 focus:ring-offset-0 disabled:pointer-events-none"
             aria-label="Close"
           >
             <X size={20} strokeWidth={1.5} />
@@ -103,7 +101,7 @@ function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="sheet-header"
       className={cn(
         "flex flex-shrink-0 flex-col border-b border-[#E8E6E3] bg-[#FDFCFB] p-8",
-        className
+        className,
       )}
       {...props}
     />
@@ -115,10 +113,7 @@ function SheetBody({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="sheet-body"
-      className={cn(
-        "flex-1 min-h-0 overflow-y-auto p-8",
-        className
-      )}
+      className={cn("flex-1 min-h-0 overflow-y-auto p-8", className)}
       {...props}
     />
   );
@@ -130,7 +125,7 @@ function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="sheet-footer"
       className={cn(
         "flex flex-shrink-0 flex-col gap-3 border-t border-[#E8E6E3] bg-[#FDFCFB] px-12 py-6 sm:flex-row sm:justify-end",
-        className
+        className,
       )}
       {...props}
     />
@@ -145,8 +140,8 @@ function SheetTitle({
     <SheetPrimitive.Title
       data-slot="sheet-title"
       className={cn(
-        "text-[24px] text-[#2a2a2a] mb-1 tracking-tight",
-        className
+        "text-[24px] text-foreground mb-1 tracking-tight",
+        className,
       )}
       style={{
         fontFamily: "'Playfair Display', serif",
@@ -165,7 +160,7 @@ function SheetDescription({
   return (
     <SheetPrimitive.Description
       data-slot="sheet-description"
-      className={cn("text-[13px] text-[#9a9a9a]", className)}
+      className={cn("text-[13px] text-textSecondary", className)}
       style={{
         fontFamily: "'Inter', sans-serif",
         fontWeight: 300,
@@ -178,12 +173,12 @@ function SheetDescription({
 
 export {
   Sheet,
-  SheetTrigger,
+  SheetBody,
   SheetClose,
   SheetContent,
-  SheetHeader,
-  SheetBody,
-  SheetFooter,
-  SheetTitle,
   SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
 };

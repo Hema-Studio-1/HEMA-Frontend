@@ -26,7 +26,7 @@ export function MainLayout({
 
   return (
     <div
-      className="flex flex-col h-screen overflow-hidden bg-[#F7F5F2]"
+      className="flex flex-col h-screen overflow-hidden bg-background"
       style={{ fontFamily: "'Inter', sans-serif" }}
     >
       {/* Row 1: Header – fixed height; remaining viewport height is for the body */}

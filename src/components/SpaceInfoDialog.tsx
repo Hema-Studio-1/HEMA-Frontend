@@ -1,4 +1,4 @@
-import { X } from 'lucide-react';
+import { X } from "lucide-react";
 
 interface SpaceInfoDialogProps {
   isOpen: boolean;
@@ -15,41 +15,45 @@ interface SpaceInfoDialogProps {
   } | null;
 }
 
-export function SpaceInfoDialog({ isOpen, onClose, space }: SpaceInfoDialogProps) {
+export function SpaceInfoDialog({
+  isOpen,
+  onClose,
+  space,
+}: SpaceInfoDialogProps) {
   if (!isOpen || !space) return null;
 
   return (
     <>
       {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-[#2a2a2a]/20 backdrop-blur-sm z-40 transition-opacity duration-500"
+      <div
+        className="fixed inset-0 bg-foreground/20 backdrop-blur-sm z-40 transition-opacity duration-500"
         onClick={onClose}
       />
 
       {/* Dialog */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div 
-          className="bg-[#F7F5F2] rounded-sm w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+        <div
+          className="bg-background rounded-sm w-full max-w-2xl max-h-[90vh] overflow-y-auto"
           style={{
-            boxShadow: '0 4px 24px rgba(0, 0, 0, 0.08)'
+            boxShadow: "0 4px 24px rgba(0, 0, 0, 0.08)",
           }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
           <div className="flex items-center justify-between p-8 pb-6">
             <h2
-              className="text-[24px] text-[#2a2a2a]"
-              style={{ 
+              className="text-[24px] text-foreground"
+              style={{
                 fontFamily: "'Playfair Display', serif",
                 fontWeight: 300,
-                letterSpacing: '-0.01em'
+                letterSpacing: "-0.01em",
               }}
             >
               Space details
             </h2>
             <button
               onClick={onClose}
-              className="p-2 text-[#9a9a9a] hover:text-[#2a2a2a] transition-colors duration-300"
+              className="p-2 text-textSecondary hover:text-foreground transition-colors duration-300"
             >
               <X size={20} strokeWidth={1.5} />
             </button>
@@ -59,21 +63,21 @@ export function SpaceInfoDialog({ isOpen, onClose, space }: SpaceInfoDialogProps
           <div className="px-8 pb-8 space-y-6">
             {/* Space Name */}
             <div>
-              <label 
-                className="block text-[11px] text-[#9a9a9a] mb-2 uppercase tracking-widest"
-                style={{ 
+              <label
+                className="block text-[11px] text-textSecondary mb-2 uppercase tracking-widest"
+                style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 400,
-                  letterSpacing: '0.1em'
+                  letterSpacing: "0.1em",
                 }}
               >
                 Space Name
               </label>
-              <p 
-                className="text-[16px] text-[#2a2a2a]"
-                style={{ 
+              <p
+                className="text-[16px] text-foreground"
+                style={{
                   fontFamily: "'Inter', sans-serif",
-                  fontWeight: 300
+                  fontWeight: 300,
                 }}
               >
                 {space.name}
@@ -83,42 +87,42 @@ export function SpaceInfoDialog({ isOpen, onClose, space }: SpaceInfoDialogProps
             {/* Type & Category */}
             <div className="grid grid-cols-2 gap-6">
               <div>
-                <label 
-                  className="block text-[11px] text-[#9a9a9a] mb-2 uppercase tracking-widest"
-                  style={{ 
+                <label
+                  className="block text-[11px] text-textSecondary mb-2 uppercase tracking-widest"
+                  style={{
                     fontFamily: "'Inter', sans-serif",
                     fontWeight: 400,
-                    letterSpacing: '0.1em'
+                    letterSpacing: "0.1em",
                   }}
                 >
                   Type
                 </label>
-                <p 
-                  className="text-[15px] text-[#2a2a2a]"
-                  style={{ 
+                <p
+                  className="text-[15px] text-foreground"
+                  style={{
                     fontFamily: "'Inter', sans-serif",
-                    fontWeight: 300
+                    fontWeight: 300,
                   }}
                 >
                   {space.type}
                 </p>
               </div>
               <div>
-                <label 
-                  className="block text-[11px] text-[#9a9a9a] mb-2 uppercase tracking-widest"
-                  style={{ 
+                <label
+                  className="block text-[11px] text-textSecondary mb-2 uppercase tracking-widest"
+                  style={{
                     fontFamily: "'Inter', sans-serif",
                     fontWeight: 400,
-                    letterSpacing: '0.1em'
+                    letterSpacing: "0.1em",
                   }}
                 >
                   Category / Style
                 </label>
-                <p 
-                  className="text-[15px] text-[#2a2a2a]"
-                  style={{ 
+                <p
+                  className="text-[15px] text-foreground"
+                  style={{
                     fontFamily: "'Inter', sans-serif",
-                    fontWeight: 300
+                    fontWeight: 300,
                   }}
                 >
                   {space.category}
@@ -128,22 +132,22 @@ export function SpaceInfoDialog({ isOpen, onClose, space }: SpaceInfoDialogProps
 
             {/* Description */}
             <div>
-              <label 
-                className="block text-[11px] text-[#9a9a9a] mb-2 uppercase tracking-widest"
-                style={{ 
+              <label
+                className="block text-[11px] text-textSecondary mb-2 uppercase tracking-widest"
+                style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 400,
-                  letterSpacing: '0.1em'
+                  letterSpacing: "0.1em",
                 }}
               >
                 Description
               </label>
-              <p 
-                className="text-[15px] text-[#2a2a2a] leading-relaxed"
-                style={{ 
+              <p
+                className="text-[15px] text-foreground leading-relaxed"
+                style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 300,
-                  lineHeight: '1.7'
+                  lineHeight: "1.7",
                 }}
               >
                 {space.description}
@@ -152,24 +156,24 @@ export function SpaceInfoDialog({ isOpen, onClose, space }: SpaceInfoDialogProps
 
             {/* Assets */}
             <div>
-              <label 
-                className="block text-[11px] text-[#9a9a9a] mb-2 uppercase tracking-widest"
-                style={{ 
+              <label
+                className="block text-[11px] text-textSecondary mb-2 uppercase tracking-widest"
+                style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 400,
-                  letterSpacing: '0.1em'
+                  letterSpacing: "0.1em",
                 }}
               >
                 Generated Assets
               </label>
               <ul className="space-y-2">
                 {space.assets.map((asset, index) => (
-                  <li 
+                  <li
                     key={index}
                     className="text-[14px] text-[#626262]"
-                    style={{ 
+                    style={{
                       fontFamily: "'Inter', sans-serif",
-                      fontWeight: 300
+                      fontWeight: 300,
                     }}
                   >
                     • {asset}
@@ -182,42 +186,42 @@ export function SpaceInfoDialog({ isOpen, onClose, space }: SpaceInfoDialogProps
             <div className="pt-4 border-t border-[#E8E6E3]">
               <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <label 
-                    className="block text-[11px] text-[#9a9a9a] mb-2 uppercase tracking-widest"
-                    style={{ 
+                  <label
+                    className="block text-[11px] text-textSecondary mb-2 uppercase tracking-widest"
+                    style={{
                       fontFamily: "'Inter', sans-serif",
                       fontWeight: 400,
-                      letterSpacing: '0.1em'
+                      letterSpacing: "0.1em",
                     }}
                   >
                     Created
                   </label>
-                  <p 
+                  <p
                     className="text-[13px] text-[#626262]"
-                    style={{ 
+                    style={{
                       fontFamily: "'Inter', sans-serif",
-                      fontWeight: 300
+                      fontWeight: 300,
                     }}
                   >
                     {space.createdDate}
                   </p>
                 </div>
                 <div>
-                  <label 
-                    className="block text-[11px] text-[#9a9a9a] mb-2 uppercase tracking-widest"
-                    style={{ 
+                  <label
+                    className="block text-[11px] text-textSecondary mb-2 uppercase tracking-widest"
+                    style={{
                       fontFamily: "'Inter', sans-serif",
                       fontWeight: 400,
-                      letterSpacing: '0.1em'
+                      letterSpacing: "0.1em",
                     }}
                   >
                     Last Updated
                   </label>
-                  <p 
+                  <p
                     className="text-[13px] text-[#626262]"
-                    style={{ 
+                    style={{
                       fontFamily: "'Inter', sans-serif",
-                      fontWeight: 300
+                      fontWeight: 300,
                     }}
                   >
                     {space.lastUpdated}

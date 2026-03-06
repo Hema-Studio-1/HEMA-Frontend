@@ -211,7 +211,7 @@ export function Gallery({ onEditSpace, onViewSpace }: GalleryProps) {
                     size={14} 
                     className={`transition-colors duration-300 ${
                       image.isLiked 
-                        ? 'text-[#2a2a2a] fill-current' 
+                        ? 'text-foreground fill-current' 
                         : 'text-[#626262]'
                     }`}
                     strokeWidth={1.5}

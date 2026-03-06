@@ -74,7 +74,7 @@ export function Sidebar({ isExpanded, onToggle, currentView, onNavigate }: Sideb
               </span>
             ) : (
               <span
-                className={`absolute left-[40px] text-[13px] text-[#626262] whitespace-nowrap px-3 py-1.5 rounded-md transition-all duration-300 border border-black/10 bg-[#F7F5F2] shadow-[0_2px_8px_rgba(0,0,0,0.06)] ${
+                className={`absolute left-[40px] text-[13px] text-[#626262] whitespace-nowrap px-3 py-1.5 rounded-md transition-all duration-300 border border-black/10 bg-background shadow-[0_2px_8px_rgba(0,0,0,0.06)] ${
                   hoveredItem === item.label
                     ? 'opacity-100 translate-x-0'
                     : 'opacity-0 -translate-x-2 pointer-events-none'

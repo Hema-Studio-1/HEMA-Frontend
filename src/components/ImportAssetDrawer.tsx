@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react';
-import { X, Upload } from 'lucide-react';
-import React from 'react';
+import { Upload, X } from "lucide-react";
+import type React from "react";
+import { useRef, useState } from "react";
 import {
   Sheet,
   SheetBody,
@@ -9,31 +9,40 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-} from './ui/sheet';
+} from "./ui/sheet";
 
 interface ImportAssetDrawerProps {
   onClose: () => void;
   onImport: (
-    name: string, 
-    type: 'Furniture' | 'Lighting' | 'Kitchen' | 'Decor' | 'Accessories', 
-    category: string, 
-    imageUrl: string
+    name: string,
+    type: "Furniture" | "Lighting" | "Kitchen" | "Decor" | "Accessories",
+    category: string,
+    imageUrl: string,
   ) => void;
 }
 
-const types = ['Furniture', 'Lighting', 'Kitchen', 'Decor', 'Accessories'] as const;
-const categoriesByType: Record<typeof types[number], string[]> = {
-  'Furniture': ['Seating', 'Tables', 'Storage', 'Beds'],
-  'Lighting': ['Ceiling', 'Floor', 'Table', 'Wall'],
-  'Kitchen': ['Fixtures', 'Hardware', 'Appliances'],
-  'Decor': ['Decorative Objects', 'Textiles', 'Art'],
-  'Accessories': ['Rugs', 'Pillows', 'Hardware', 'Mirrors'],
+const types = [
+  "Furniture",
+  "Lighting",
+  "Kitchen",
+  "Decor",
+  "Accessories",
+] as const;
+const categoriesByType: Record<(typeof types)[number], string[]> = {
+  Furniture: ["Seating", "Tables", "Storage", "Beds"],
+  Lighting: ["Ceiling", "Floor", "Table", "Wall"],
+  Kitchen: ["Fixtures", "Hardware", "Appliances"],
+  Decor: ["Decorative Objects", "Textiles", "Art"],
+  Accessories: ["Rugs", "Pillows", "Hardware", "Mirrors"],
 };
 
-export function ImportAssetDrawer({ onClose, onImport }: ImportAssetDrawerProps) {
-  const [name, setName] = useState('');
-  const [type, setType] = useState<typeof types[number] | ''>('');
-  const [category, setCategory] = useState('');
+export function ImportAssetDrawer({
+  onClose,
+  onImport,
+}: ImportAssetDrawerProps) {
+  const [name, setName] = useState("");
+  const [type, setType] = useState<(typeof types)[number] | "">("");
+  const [category, setCategory] = useState("");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isTypeOpen, setIsTypeOpen] = useState(false);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
@@ -43,7 +52,7 @@ export function ImportAssetDrawer({ onClose, onImport }: ImportAssetDrawerProps)
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file && file.type.startsWith('image/')) {
+    if (file && file.type.startsWith("image/")) {
       const reader = new FileReader();
       reader.onloadend = () => {
         setImageUrl(reader.result as string);
@@ -55,7 +64,7 @@ export function ImportAssetDrawer({ onClose, onImport }: ImportAssetDrawerProps)
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('image/')) {
+    if (file && file.type.startsWith("image/")) {
       const reader = new FileReader();
       reader.onloadend = () => {
         setImageUrl(reader.result as string);
@@ -64,9 +73,9 @@ export function ImportAssetDrawer({ onClose, onImport }: ImportAssetDrawerProps)
     }
   };
 
-  const handleTypeChange = (newType: typeof types[number]) => {
+  const handleTypeChange = (newType: (typeof types)[number]) => {
     setType(newType);
-    setCategory(''); // Reset category when type changes
+    setCategory(""); // Reset category when type changes
     setIsTypeOpen(false);
   };
 
@@ -84,26 +93,28 @@ export function ImportAssetDrawer({ onClose, onImport }: ImportAssetDrawerProps)
       <SheetContent side="right" className="max-w-xl">
         <SheetHeader>
           <SheetTitle>Import Asset</SheetTitle>
-          <SheetDescription>Add a new design element to your asset library</SheetDescription>
+          <SheetDescription>
+            Add a new design element to your asset library
+          </SheetDescription>
         </SheetHeader>
         <SheetBody>
           {/* Upload Section */}
           <div className="mb-8">
-            <h4 
-              className="text-[11px] uppercase tracking-widest text-[#9a9a9a] mb-4"
-              style={{ 
+            <h4
+              className="text-[11px] uppercase tracking-widest text-textSecondary mb-4"
+              style={{
                 fontFamily: "'Inter', sans-serif",
                 fontWeight: 400,
-                letterSpacing: '0.15em'
+                letterSpacing: "0.15em",
               }}
             >
               Image
             </h4>
 
             {/* Upload Area - Fixed Size */}
-            <div 
-              className="bg-[#F7F5F2] rounded-sm mb-4 overflow-hidden"
-              style={{ height: '400px' }}
+            <div
+              className="bg-background rounded-sm mb-4 overflow-hidden"
+              style={{ height: "400px" }}
             >
               {!imageUrl ? (
                 <div
@@ -112,21 +123,25 @@ export function ImportAssetDrawer({ onClose, onImport }: ImportAssetDrawerProps)
                   className="w-full h-full flex flex-col items-center justify-center cursor-pointer hover:bg-[#F3F1EE] transition-colors duration-300"
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  <Upload size={32} className="text-[#c5c5c5] mb-4" strokeWidth={1.5} />
-                  <p 
-                    className="text-[13px] text-[#9a9a9a] mb-1"
-                    style={{ 
+                  <Upload
+                    size={32}
+                    className="text-[#c5c5c5] mb-4"
+                    strokeWidth={1.5}
+                  />
+                  <p
+                    className="text-[13px] text-textSecondary mb-1"
+                    style={{
                       fontFamily: "'Inter', sans-serif",
-                      fontWeight: 300
+                      fontWeight: 300,
                     }}
                   >
                     Drag & drop image here
                   </p>
-                  <p 
+                  <p
                     className="text-[11px] text-[#c5c5c5]"
-                    style={{ 
+                    style={{
                       fontFamily: "'Inter', sans-serif",
-                      fontWeight: 300
+                      fontWeight: 300,
                     }}
                   >
                     JPG / PNG • Max 5MB
@@ -151,14 +166,14 @@ export function ImportAssetDrawer({ onClose, onImport }: ImportAssetDrawerProps)
 
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="w-full px-4 py-3 text-[13px] border border-[#E8E6E3] text-[#626262] rounded-sm hover:border-[#2a2a2a] hover:text-[#2a2a2a] transition-all duration-300"
-              style={{ 
+              className="w-full px-4 py-3 text-[13px] border border-[#E8E6E3] text-[#626262] rounded-sm hover:border-foreground hover:text-foreground transition-all duration-300"
+              style={{
                 fontFamily: "'Inter', sans-serif",
                 fontWeight: 300,
-                letterSpacing: '0.05em'
+                letterSpacing: "0.05em",
               }}
             >
-              {imageUrl ? 'Change Image' : 'Browse Files'}
+              {imageUrl ? "Change Image" : "Browse Files"}
             </button>
 
             <input
@@ -172,12 +187,12 @@ export function ImportAssetDrawer({ onClose, onImport }: ImportAssetDrawerProps)
 
           {/* Asset Details */}
           <div>
-            <h4 
-              className="text-[11px] uppercase tracking-widest text-[#9a9a9a] mb-4"
-              style={{ 
+            <h4
+              className="text-[11px] uppercase tracking-widest text-textSecondary mb-4"
+              style={{
                 fontFamily: "'Inter', sans-serif",
                 fontWeight: 400,
-                letterSpacing: '0.15em'
+                letterSpacing: "0.15em",
               }}
             >
               Details
@@ -185,12 +200,12 @@ export function ImportAssetDrawer({ onClose, onImport }: ImportAssetDrawerProps)
 
             {/* Name Input */}
             <div className="mb-6">
-              <label 
-                className="block text-[11px] uppercase tracking-widest text-[#9a9a9a] mb-2"
-                style={{ 
+              <label
+                className="block text-[11px] uppercase tracking-widest text-textSecondary mb-2"
+                style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 400,
-                  letterSpacing: '0.15em'
+                  letterSpacing: "0.15em",
                 }}
               >
                 Asset Name
@@ -200,53 +215,53 @@ export function ImportAssetDrawer({ onClose, onImport }: ImportAssetDrawerProps)
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g., Modern Lounge Chair"
-                className="w-full px-4 py-3 text-[14px] bg-transparent border border-[#E8E6E3] rounded-sm text-[#2a2a2a] placeholder-[#c5c5c5] focus:outline-none focus:border-[#2a2a2a] transition-colors duration-300"
-                style={{ 
+                className="w-full px-4 py-3 text-[14px] bg-transparent border border-[#E8E6E3] rounded-sm text-foreground placeholder-[#c5c5c5] focus:outline-none focus:border-foreground transition-colors duration-300"
+                style={{
                   fontFamily: "'Inter', sans-serif",
-                  fontWeight: 300
+                  fontWeight: 300,
                 }}
               />
             </div>
 
             {/* Type Dropdown */}
             <div className="mb-6 relative" ref={typeRef}>
-              <label 
-                className="block text-[11px] uppercase tracking-widest text-[#9a9a9a] mb-2"
-                style={{ 
+              <label
+                className="block text-[11px] uppercase tracking-widest text-textSecondary mb-2"
+                style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 400,
-                  letterSpacing: '0.15em'
+                  letterSpacing: "0.15em",
                 }}
               >
                 Type
               </label>
               <button
                 onClick={() => setIsTypeOpen(!isTypeOpen)}
-                className="w-full px-4 py-3 text-[14px] bg-transparent border border-[#E8E6E3] rounded-sm text-left focus:outline-none focus:border-[#2a2a2a] transition-colors duration-300"
-                style={{ 
+                className="w-full px-4 py-3 text-[14px] bg-transparent border border-[#E8E6E3] rounded-sm text-left focus:outline-none focus:border-foreground transition-colors duration-300"
+                style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 300,
-                  color: type ? '#2a2a2a' : '#c5c5c5'
+                  color: type ? "var(--foreground)" : "#c5c5c5",
                 }}
               >
-                {type || 'Select type'}
+                {type || "Select type"}
               </button>
-              
+
               {/* Dropdown Menu */}
               {isTypeOpen && (
-                <div 
+                <div
                   className="absolute top-full left-0 right-0 mt-2 bg-[#FDFCFB] border border-[#E8E6E3] rounded-sm shadow-lg z-20"
-                  style={{ maxHeight: '240px', overflowY: 'auto' }}
+                  style={{ maxHeight: "240px", overflowY: "auto" }}
                 >
                   {types.map((t) => (
                     <button
                       key={t}
                       onClick={() => handleTypeChange(t)}
-                      className="w-full px-4 py-3 text-[14px] text-left hover:bg-[#F7F5F2] transition-colors duration-300"
-                      style={{ 
+                      className="w-full px-4 py-3 text-[14px] text-left hover:bg-background transition-colors duration-300"
+                      style={{
                         fontFamily: "'Inter', sans-serif",
                         fontWeight: 300,
-                        color: type === t ? '#2a2a2a' : '#626262'
+                        color: type === t ? "var(--foreground)" : "#626262",
                       }}
                     >
                       {t}
@@ -258,12 +273,12 @@ export function ImportAssetDrawer({ onClose, onImport }: ImportAssetDrawerProps)
 
             {/* Category Dropdown */}
             <div className="relative" ref={categoryRef}>
-              <label 
-                className="block text-[11px] uppercase tracking-widest text-[#9a9a9a] mb-2"
-                style={{ 
+              <label
+                className="block text-[11px] uppercase tracking-widest text-textSecondary mb-2"
+                style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 400,
-                  letterSpacing: '0.15em'
+                  letterSpacing: "0.15em",
                 }}
               >
                 Category
@@ -272,24 +287,24 @@ export function ImportAssetDrawer({ onClose, onImport }: ImportAssetDrawerProps)
                 onClick={() => type && setIsCategoryOpen(!isCategoryOpen)}
                 disabled={!type}
                 className={`w-full px-4 py-3 text-[14px] bg-transparent border rounded-sm text-left transition-colors duration-300 ${
-                  type 
-                    ? 'border-[#E8E6E3] focus:outline-none focus:border-[#2a2a2a]' 
-                    : 'border-[#F3F1EE] cursor-not-allowed'
+                  type
+                    ? "border-[#E8E6E3] focus:outline-none focus:border-foreground"
+                    : "border-[#F3F1EE] cursor-not-allowed"
                 }`}
-                style={{ 
+                style={{
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 300,
-                  color: category ? '#2a2a2a' : '#c5c5c5'
+                  color: category ? "var(--foreground)" : "#c5c5c5",
                 }}
               >
-                {category || (type ? 'Select category' : 'Select type first')}
+                {category || (type ? "Select category" : "Select type first")}
               </button>
-              
+
               {/* Dropdown Menu */}
               {isCategoryOpen && type && (
-                <div 
+                <div
                   className="absolute top-full left-0 right-0 mt-2 bg-[#FDFCFB] border border-[#E8E6E3] rounded-sm shadow-lg z-20"
-                  style={{ maxHeight: '240px', overflowY: 'auto' }}
+                  style={{ maxHeight: "240px", overflowY: "auto" }}
                 >
                   {availableCategories.map((cat) => (
                     <button
@@ -298,11 +313,12 @@ export function ImportAssetDrawer({ onClose, onImport }: ImportAssetDrawerProps)
                         setCategory(cat);
                         setIsCategoryOpen(false);
                       }}
-                      className="w-full px-4 py-3 text-[14px] text-left hover:bg-[#F7F5F2] transition-colors duration-300"
-                      style={{ 
+                      className="w-full px-4 py-3 text-[14px] text-left hover:bg-background transition-colors duration-300"
+                      style={{
                         fontFamily: "'Inter', sans-serif",
                         fontWeight: 300,
-                        color: category === cat ? '#2a2a2a' : '#626262'
+                        color:
+                          category === cat ? "var(--foreground)" : "#626262",
                       }}
                     >
                       {cat}
@@ -316,11 +332,11 @@ export function ImportAssetDrawer({ onClose, onImport }: ImportAssetDrawerProps)
         <SheetFooter>
           <button
             onClick={onClose}
-            className="px-6 py-3 text-[13px] text-[#626262] hover:text-[#2a2a2a] transition-colors duration-300"
-            style={{ 
+            className="px-6 py-3 text-[13px] text-[#626262] hover:text-foreground transition-colors duration-300"
+            style={{
               fontFamily: "'Inter', sans-serif",
               fontWeight: 300,
-              letterSpacing: '0.05em'
+              letterSpacing: "0.05em",
             }}
           >
             Cancel
@@ -330,13 +346,13 @@ export function ImportAssetDrawer({ onClose, onImport }: ImportAssetDrawerProps)
             disabled={!canImport}
             className={`px-6 py-3 text-[13px] rounded-sm transition-all duration-300 ${
               canImport
-                ? 'bg-[#2a2a2a] text-[#FDFCFB] hover:opacity-80'
-                : 'bg-[#F3F1EE] text-[#c5c5c5] cursor-not-allowed'
+                ? "bg-foreground text-[#FDFCFB] hover:opacity-80"
+                : "bg-[#F3F1EE] text-[#c5c5c5] cursor-not-allowed"
             }`}
-            style={{ 
+            style={{
               fontFamily: "'Inter', sans-serif",
               fontWeight: 300,
-              letterSpacing: '0.05em'
+              letterSpacing: "0.05em",
             }}
           >
             Import Asset

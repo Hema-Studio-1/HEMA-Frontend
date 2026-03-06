@@ -1,5 +1,5 @@
-import { User, Bell } from 'lucide-react';
-import { useState } from 'react';
+import { Bell, User } from "lucide-react";
+import { useState } from "react";
 
 interface HeaderProps {
   onHomeClick: () => void;
@@ -10,9 +10,24 @@ export function Header({ onHomeClick, onNotificationsClick }: HeaderProps) {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   const notifications = [
-    { id: '1', type: 'task', message: 'Task assigned to you: Review living room design', time: '2 hours ago' },
-    { id: '2', type: 'space', message: 'Space updated by Sarah Chen: Minimal Kitchen', time: '5 hours ago' },
-    { id: '3', type: 'mention', message: 'You were mentioned in Modern Bedroom project', time: '1 day ago' },
+    {
+      id: "1",
+      type: "task",
+      message: "Task assigned to you: Review living room design",
+      time: "2 hours ago",
+    },
+    {
+      id: "2",
+      type: "space",
+      message: "Space updated by Sarah Chen: Minimal Kitchen",
+      time: "5 hours ago",
+    },
+    {
+      id: "3",
+      type: "mention",
+      message: "You were mentioned in Modern Bedroom project",
+      time: "1 day ago",
+    },
   ];
 
   const handleViewAllClick = () => {
@@ -23,16 +38,16 @@ export function Header({ onHomeClick, onNotificationsClick }: HeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 left-0 right-0 z-50 bg-[#F7F5F2]/80 backdrop-blur-md border-b border-[#eeeeed]">
+    <header className="sticky top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-[#eeeeed]">
       <div className="flex items-center justify-between md:px-8 px-4 py-3">
         {/* Logo - Clickable to expand sidebar */}
         <button
           onClick={onHomeClick}
-          className="text-[14px] text-[#1a1a1a] tracking-wide hover:text-[#2a2a2a] transition-colors duration-300"
-          style={{ 
+          className="text-[14px] text-[#1a1a1a] tracking-wide hover:text-foreground transition-colors duration-300"
+          style={{
             fontFamily: "'Inter', sans-serif",
             fontWeight: 500,
-            letterSpacing: '0.05em'
+            letterSpacing: "0.05em",
           }}
         >
           Hema
@@ -42,7 +57,7 @@ export function Header({ onHomeClick, onNotificationsClick }: HeaderProps) {
         <div className="flex items-center gap-4">
           {/* Notification Bell */}
           <div className="relative">
-            <button 
+            <button
               onClick={() => setIsNotificationOpen(!isNotificationOpen)}
               className="w-8 h-8 rounded-full bg-transparent hover:bg-[#E8E6E3]/50 flex items-center justify-center transition-colors duration-300"
             >
@@ -53,27 +68,27 @@ export function Header({ onHomeClick, onNotificationsClick }: HeaderProps) {
             {isNotificationOpen && (
               <>
                 {/* Backdrop to close */}
-                <div 
+                <div
                   className="fixed inset-0 z-40"
                   onClick={() => setIsNotificationOpen(false)}
                 />
-                
+
                 {/* Dropdown Panel */}
-                <div 
-                  className="absolute right-0 top-12 w-80 bg-[#F7F5F2] rounded-sm z-50"
+                <div
+                  className="absolute right-0 top-12 w-80 bg-background rounded-sm z-50"
                   style={{
-                    boxShadow: '0 4px 24px rgba(0, 0, 0, 0.08)',
-                    border: '1px solid rgba(0, 0, 0, 0.06)'
+                    boxShadow: "0 4px 24px rgba(0, 0, 0, 0.08)",
+                    border: "1px solid rgba(0, 0, 0, 0.06)",
                   }}
                 >
                   {/* Header */}
                   <div className="px-6 py-4 border-b border-[#E8E6E3]">
-                    <h3 
-                      className="text-[13px] text-[#2a2a2a]"
-                      style={{ 
+                    <h3
+                      className="text-[13px] text-foreground"
+                      style={{
                         fontFamily: "'Inter', sans-serif",
                         fontWeight: 400,
-                        letterSpacing: '0.03em'
+                        letterSpacing: "0.03em",
                       }}
                     >
                       Notifications
@@ -83,25 +98,25 @@ export function Header({ onHomeClick, onNotificationsClick }: HeaderProps) {
                   {/* Notification List */}
                   <div className="max-h-96 overflow-y-auto">
                     {notifications.map((notification) => (
-                      <div 
+                      <div
                         key={notification.id}
                         className="px-6 py-4 border-b border-[#E8E6E3] hover:bg-[#E8E6E3]/30 transition-colors duration-300 cursor-pointer"
                       >
-                        <p 
-                          className="text-[13px] text-[#2a2a2a] mb-1"
-                          style={{ 
+                        <p
+                          className="text-[13px] text-foreground mb-1"
+                          style={{
                             fontFamily: "'Inter', sans-serif",
                             fontWeight: 300,
-                            lineHeight: '1.6'
+                            lineHeight: "1.6",
                           }}
                         >
                           {notification.message}
                         </p>
-                        <p 
-                          className="text-[11px] text-[#9a9a9a]"
-                          style={{ 
+                        <p
+                          className="text-[11px] text-textSecondary"
+                          style={{
                             fontFamily: "'Inter', sans-serif",
-                            fontWeight: 300
+                            fontWeight: 300,
                           }}
                         >
                           {notification.time}
@@ -112,13 +127,13 @@ export function Header({ onHomeClick, onNotificationsClick }: HeaderProps) {
 
                   {/* Footer */}
                   <div className="px-6 py-4 border-t border-[#E8E6E3]">
-                    <button 
+                    <button
                       onClick={handleViewAllClick}
-                      className="text-[12px] text-[#626262] hover:text-[#2a2a2a] transition-colors duration-300"
-                      style={{ 
+                      className="text-[12px] text-[#626262] hover:text-foreground transition-colors duration-300"
+                      style={{
                         fontFamily: "'Inter', sans-serif",
                         fontWeight: 400,
-                        letterSpacing: '0.03em'
+                        letterSpacing: "0.03em",
                       }}
                     >
                       View all notifications

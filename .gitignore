@@ -13,6 +13,8 @@
 # testing
 /coverage
 
+# agent 
+/.cursor
 # next.js
 /.next/
 /out/

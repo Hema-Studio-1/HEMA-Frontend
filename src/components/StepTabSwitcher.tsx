@@ -13,12 +13,12 @@ export function StepTabSwitcher({ activeTab, onTabChange }: StepTabSwitcherProps
           fontFamily: "'Inter', sans-serif",
           fontWeight: activeTab === 'controls' ? 400 : 300,
           letterSpacing: '0.12em',
-          color: activeTab === 'controls' ? '#2a2a2a' : '#9a9a9a'
+          color: activeTab === 'controls' ? 'var(--foreground)' : 'var(--text-secondary)'
         }}
       >
         Controls
         {activeTab === 'controls' && (
-          <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-[#2a2a2a]" />
+          <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-foreground" />
         )}
       </button>
       <button
@@ -28,12 +28,12 @@ export function StepTabSwitcher({ activeTab, onTabChange }: StepTabSwitcherProps
           fontFamily: "'Inter', sans-serif",
           fontWeight: activeTab === 'chat' ? 400 : 300,
           letterSpacing: '0.12em',
-          color: activeTab === 'chat' ? '#2a2a2a' : '#9a9a9a'
+          color: activeTab === 'chat' ? 'var(--foreground)' : 'var(--text-secondary)'
         }}
       >
         Chat
         {activeTab === 'chat' && (
-          <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-[#2a2a2a]" />
+          <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-foreground" />
         )}
       </button>
     </div>
