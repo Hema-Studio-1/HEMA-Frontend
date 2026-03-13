@@ -1,6 +1,5 @@
-import { useState } from 'react';
-import { Plus, FolderOpen, Layers, Grid3x3, Users, Settings, LogOut } from 'lucide-react';
-import React from 'react';
+import { FolderOpen, Grid3x3, Layers, LogOut, Plus, Settings, Users } from 'lucide-react';
+import React, { useState } from 'react';
 
 interface SidebarProps {
   isExpanded: boolean;
@@ -15,7 +14,7 @@ export function Sidebar({ isExpanded, onToggle, currentView, onNavigate }: Sideb
   const mainMenuItems = [
     { icon: Plus, label: 'Create', view: 'home' as const },
     { icon: FolderOpen, label: 'Projects', view: 'projects' as const },
-    { icon: Layers, label: 'Assets', view: 'assets' as const },
+    { icon: Layers, label: 'Library', view: 'assets' as const },
     { icon: Grid3x3, label: 'Mood Board', view: 'moodboard' as const },
   ];
 

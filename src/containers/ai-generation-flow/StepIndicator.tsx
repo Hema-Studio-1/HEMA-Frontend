@@ -19,9 +19,8 @@ export function StepIndicator({
           <button
             type="button"
             key={step.number}
-            onClick={() => step.number <= currentStep && setCurrentStep(step.number)}
+            onClick={() => setCurrentStep(step.number)}
             className="flex flex-col items-center gap-1.5 group"
-            disabled={step.number > currentStep}
           >
             <div
               className={`w-6 h-6 flex items-center justify-center rounded-full transition-colors duration-300 ${
@@ -41,7 +40,9 @@ export function StepIndicator({
             </div>
             <span
               className={`text-[9px] tracking-wider uppercase transition-colors duration-300 text-center break-words ${
-                currentStep === step.number ? "text-foreground" : "text-textSecondary"
+                currentStep === step.number
+                  ? "text-foreground"
+                  : "text-textSecondary"
               }`}
               style={{
                 fontFamily: "'Inter', sans-serif",
@@ -62,9 +63,8 @@ export function StepIndicator({
           <button
             type="button"
             key={step.number}
-            onClick={() => step.number <= currentStep && setCurrentStep(step.number)}
+            onClick={() => setCurrentStep(step.number)}
             className="flex items-center gap-2 flex-shrink-0 group"
-            disabled={step.number > currentStep}
           >
             <div
               className={`w-6 h-6 flex items-center justify-center rounded-full transition-colors duration-300 ${
@@ -84,7 +84,9 @@ export function StepIndicator({
             </div>
             <span
               className={`text-[10px] tracking-wider uppercase transition-colors duration-300 ${
-                currentStep === step.number ? "text-foreground" : "text-textSecondary"
+                currentStep === step.number
+                  ? "text-foreground"
+                  : "text-textSecondary"
               }`}
               style={{
                 fontFamily: "'Inter', sans-serif",

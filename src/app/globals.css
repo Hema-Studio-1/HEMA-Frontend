@@ -35,7 +35,7 @@ h1, h2, h3 {
 /* Inter for body and UI elements - light weight */
 body, p, span, button, input, textarea, label {
   font-family: 'Inter', sans-serif;
-  font-weight: 300;
+  /* font-weight: 300; */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

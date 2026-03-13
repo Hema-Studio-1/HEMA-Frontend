@@ -1,5 +1,15 @@
+"use client";
+
+import { uploadSingleFile } from "@/actions/upload-files";
+import { useAIGenerationFlowContext } from "@/contexts/AIGenerationFlowContext";
+import { extractSpaceDimensions } from "@/lib/dimensions";
+import { createSpaceWithImage, measureRoom } from "@/services/api/spaces";
+import { ImageType } from "@/types/image";
+import type { SpaceWithRelations } from "@/types/space";
 import { Upload, X } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import NextImage from "next/image";
+import type React from "react";
+import { useEffect, useRef, useState } from "react";
 import { CustomDropdown } from "./CustomDropdown";
 
 export interface SpaceFormData {
@@ -8,6 +18,16 @@ export interface SpaceFormData {
   category: string;
   description: string;
 }
+
+const TYPE_TO_ROOM_TYPE: Record<string, string> = {
+  "Living Room": "living-room",
+  Bedroom: "bedroom",
+  Kitchen: "kitchen",
+  Bathroom: "bathroom",
+  "Dining Room": "dining-room",
+  "Home Office": "office",
+  Custom: "living-room",
+};
 
 interface SpaceFormDialogProps {
   isOpen: boolean;
@@ -20,7 +40,7 @@ interface SpaceFormDialogProps {
     category?: string;
     description?: string;
   } | null;
-  onCreate: (data: SpaceFormData) => void;
+  onCreate: (space: SpaceWithRelations) => void;
   onUpdate?: (id: string, data: SpaceFormData) => void;
 }
 
@@ -31,6 +51,25 @@ const defaultFormData: SpaceFormData = {
   description: "",
 };
 
+function getImageDimensions(
+  file: File,
+): Promise<{ width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve({ width: img.naturalWidth, height: img.naturalHeight });
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Failed to load image"));
+    };
+    img.src = url;
+  });
+}
+
+
 export function SpaceFormDialog({
   isOpen,
   onClose,
@@ -40,6 +79,22 @@ export function SpaceFormDialog({
   onUpdate,
 }: SpaceFormDialogProps) {
   const [formData, setFormData] = useState<SpaceFormData>(defaultFormData);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [uploadPreviewUrl, setUploadPreviewUrl] = useState<string | null>(null);
+  const [uploadResult, setUploadResult] = useState<{
+    path: string;
+    url: string;
+  } | null>(null);
+  const [imageDimensions, setImageDimensions] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { step1, step3 } = useAIGenerationFlowContext();
 
   useEffect(() => {
     if (mode === "edit" && editSpace) {
@@ -51,39 +106,208 @@ export function SpaceFormDialog({
       });
     } else {
       setFormData(defaultFormData);
+      setUploadedFile(null);
+      setUploadPreviewUrl(null);
+      setUploadResult(null);
+      setImageDimensions(null);
+      setError(null);
     }
-  }, [mode, editSpace, isOpen]);
+  }, [mode, editSpace]);
 
-  const handleSubmit = () => {
-    if (!formData.name.trim()) return;
-    if (mode === "edit" && editSpace && onUpdate) {
-      onUpdate(editSpace.id, formData);
-    } else {
-      onCreate(formData);
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setError(null);
+    if (!file.type.startsWith("image/")) {
+      setError("Please select an image file (JPEG, PNG, etc.)");
+      return;
     }
-    setFormData(defaultFormData);
-    onClose();
+    setUploadedFile(file);
+    setUploadResult(null);
+
+    // Get dimensions (best effort, skip if fails)
+    try {
+      const dims = await getImageDimensions(file);
+      setImageDimensions(dims);
+    } catch {
+      setImageDimensions(null);
+    }
+
+    // Upload immediately - imageStoragePath comes from upload response
+    setIsUploading(true);
+    try {
+      const result = await uploadSingleFile(file);
+      if (result.success && result.path && result.url) {
+        setUploadResult({ path: result.path, url: result.url });
+        setUploadPreviewUrl(result.url);
+      } else {
+        setError(result.error ?? "Upload failed");
+        setUploadPreviewUrl(null);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Upload failed");
+      setUploadPreviewUrl(null);
+    } finally {
+      setIsUploading(false);
+    }
+    e.target.value = "";
+  };
+
+  const handleRemoveImage = () => {
+    if (uploadPreviewUrl?.startsWith("blob:"))
+      URL.revokeObjectURL(uploadPreviewUrl);
+    setUploadedFile(null);
+    setUploadPreviewUrl(null);
+    setUploadResult(null);
+    setImageDimensions(null);
+    setError(null);
+  };
+
+  const handleSubmit = async () => {
+    if (mode === "edit" && editSpace && onUpdate) {
+      if (!formData.name.trim()) return;
+      onUpdate(editSpace.id, formData);
+      setFormData(defaultFormData);
+      onClose();
+      return;
+    }
+
+    if (!formData.name.trim() || !formData.description.trim()) {
+      setError("Name and description are required");
+      return;
+    }
+    // Need either uploadResult (from upload-on-select) or uploadedFile (to upload on submit)
+    if (!uploadResult && !uploadedFile) {
+      setError("Please upload a space image");
+      return;
+    }
+
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      let path: string;
+      let signedUrl: string;
+
+      if (uploadResult) {
+        // Use path from upload-on-select (contains filename)
+        path = uploadResult.path;
+        signedUrl = uploadResult.url;
+      } else if (uploadedFile) {
+        // Fallback: upload on submit
+        setIsUploading(true);
+        const result = await uploadSingleFile(uploadedFile);
+        setIsUploading(false);
+        if (!result.success || !result.path || !result.url) {
+          setError(result.error ?? "Upload failed");
+          setIsSubmitting(false);
+          return;
+        }
+        path = result.path;
+        signedUrl = result.url;
+      } else {
+        setError("Please upload a space image");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // imageStoragePath = path from upload (contains filename), imageType always "original"
+      const apiPayload = {
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+        imageType: ImageType.ORIGINAL,
+        imageStoragePath: path,
+        ...(imageDimensions && {
+          imageWidth: imageDimensions.width,
+          imageHeight: imageDimensions.height,
+        }),
+      };
+
+      const apiResult = await createSpaceWithImage(apiPayload);
+
+      if (apiResult.error || !apiResult.data) {
+        setError(apiResult.error ?? "Failed to create space");
+        setIsSubmitting(false);
+        return;
+      }
+
+      const space = apiResult.data;
+      const roomType = TYPE_TO_ROOM_TYPE[formData.type] ?? "living-room";
+
+      step1.setSpace(space);
+      step1.setUploadedImageUrl(signedUrl);
+      step1.setSpaceName(space.name);
+      step1.setRoomType(roomType);
+      step3.setStyleKeywords(formData.category);
+
+      const imageId =
+        space.images?.find((img) => img.storagePath === path)?.id ??
+        space.images?.find((img) => img.type === ImageType.ORIGINAL)?.id ??
+        space.images?.[0]?.id;
+
+      // Wait for room measurement before redirecting; continue flow even if this fails.
+      if (imageId) {
+        const measureResult = await measureRoom(space.id, { imageId });
+        if (!measureResult.error && measureResult.data?.space) {
+          const measuredDimensions = extractSpaceDimensions(
+            measureResult.data.space,
+          );
+          step1.setDimensions(measuredDimensions);
+          step1.setSpace(measureResult.data.space);
+        }
+      }
+
+      setFormData(defaultFormData);
+      handleRemoveImage();
+      onClose();
+      onCreate(space);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "An unexpected error occurred",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCancel = () => {
+    handleRemoveImage();
     setFormData(defaultFormData);
+    setError(null);
     onClose();
   };
+
+  const canSubmitCreate =
+    formData.name.trim() &&
+    formData.description.trim() &&
+    (uploadedFile || uploadResult) &&
+    !isSubmitting &&
+    !isUploading;
 
   if (!isOpen) return null;
 
   return (
     <>
-      <div
-        className="fixed inset-0 bg-foreground/10 backdrop-blur-sm z-50 transition-opacity duration-500"
+      <button
+        type="button"
+        aria-label="Close dialog"
+        className="fixed inset-0 bg-foreground/10 backdrop-blur-sm z-50 transition-opacity duration-500 w-full h-full cursor-default"
         onClick={handleCancel}
       />
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
+        aria-hidden
+      >
         <div
-          className="bg-background rounded-sm w-full max-w-xl p-12 relative"
+          role="dialog"
+          aria-modal
+          aria-labelledby="space-dialog-title"
+          className="bg-background rounded-sm w-full max-w-xl p-12 relative pointer-events-auto"
           onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
         >
           <button
+            type="button"
             onClick={handleCancel}
             className="absolute top-6 right-6 p-2 hover:opacity-60 transition-opacity duration-300"
           >
@@ -91,6 +315,7 @@ export function SpaceFormDialog({
           </button>
 
           <h3
+            id="space-dialog-title"
             className="text-[28px] mb-8 text-foreground"
             style={{
               fontFamily: "'Playfair Display', serif",
@@ -104,6 +329,7 @@ export function SpaceFormDialog({
           <div className="space-y-8">
             <div>
               <label
+                htmlFor="space-name"
                 className="block text-[12px] text-textSecondary mb-3 uppercase tracking-widest"
                 style={{
                   fontFamily: "'Inter', sans-serif",
@@ -114,6 +340,7 @@ export function SpaceFormDialog({
                 Space Name
               </label>
               <input
+                id="space-name"
                 type="text"
                 value={formData.name}
                 onChange={(e) =>
@@ -125,12 +352,12 @@ export function SpaceFormDialog({
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 300,
                 }}
-                autoFocus
               />
             </div>
 
             <div>
               <label
+                htmlFor="space-type"
                 className="block text-[12px] text-textSecondary mb-3 uppercase tracking-widest"
                 style={{
                   fontFamily: "'Inter', sans-serif",
@@ -141,6 +368,7 @@ export function SpaceFormDialog({
                 Space Type
               </label>
               <CustomDropdown
+                id="space-type"
                 value={formData.type}
                 onChange={(value) => setFormData({ ...formData, type: value })}
                 options={[
@@ -158,6 +386,7 @@ export function SpaceFormDialog({
 
             <div>
               <label
+                htmlFor="space-category"
                 className="block text-[12px] text-textSecondary mb-3 uppercase tracking-widest"
                 style={{
                   fontFamily: "'Inter', sans-serif",
@@ -168,6 +397,7 @@ export function SpaceFormDialog({
                 Category / Style
               </label>
               <CustomDropdown
+                id="space-category"
                 value={formData.category}
                 onChange={(value) =>
                   setFormData({ ...formData, category: value })
@@ -186,6 +416,7 @@ export function SpaceFormDialog({
 
             <div>
               <label
+                htmlFor="space-description"
                 className="block text-[12px] text-textSecondary mb-3 uppercase tracking-widest"
                 style={{
                   fontFamily: "'Inter', sans-serif",
@@ -193,15 +424,16 @@ export function SpaceFormDialog({
                   letterSpacing: "0.1em",
                 }}
               >
-                Description (Optional)
+                Description
               </label>
               <input
+                id="space-description"
                 type="text"
                 value={formData.description}
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
                 }
-                placeholder="Brief description"
+                placeholder="Brief description of the space"
                 className="w-full px-0 py-3 text-[16px] text-foreground placeholder:text-[#c5c5c5] focus:outline-none bg-transparent border-b border-[#E8E6E3] focus:border-[#A4AC96] transition-colors duration-500"
                 style={{
                   fontFamily: "'Inter', sans-serif",
@@ -211,7 +443,7 @@ export function SpaceFormDialog({
             </div>
 
             <div>
-              <label
+              <span
                 className="block text-[12px] text-textSecondary mb-3 uppercase tracking-widest"
                 style={{
                   fontFamily: "'Inter', sans-serif",
@@ -219,20 +451,81 @@ export function SpaceFormDialog({
                   letterSpacing: "0.1em",
                 }}
               >
-                Reference Image (Optional)
-              </label>
-              <button
-                className="flex items-center gap-2 text-[13px] text-textSecondary hover:text-[#626262] transition-colors duration-300"
-                style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400 }}
-              >
-                <Upload size={16} strokeWidth={1.5} />
-                Upload image
-              </button>
+                Space Image
+              </span>
+              {uploadPreviewUrl ? (
+                <div className="relative mt-2 h-40 overflow-hidden rounded-sm border border-[#E8E6E3]">
+                  <NextImage
+                    src={uploadPreviewUrl}
+                    alt="Space preview"
+                    width={imageDimensions?.width ?? 400}
+                    height={imageDimensions?.height ?? 300}
+                    className="h-full w-full object-cover"
+                    unoptimized
+                  />
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    className="absolute top-2 right-2 p-2 bg-background/80 backdrop-blur-sm rounded-sm hover:opacity-60 transition-opacity duration-300"
+                  >
+                    <X size={16} className="text-[#626262]" strokeWidth={1.5} />
+                  </button>
+                  {imageDimensions && (
+                    <p
+                      className="text-[11px] text-textSecondary mt-1"
+                      style={{
+                        fontFamily: "'Inter', sans-serif",
+                        fontWeight: 300,
+                      }}
+                    >
+                      {imageDimensions.width} × {imageDimensions.height}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <label
+                  htmlFor="space-image-upload"
+                  className="flex items-center justify-center gap-2 w-full py-8 border border-dashed border-[#E8E6E3] rounded-sm cursor-pointer hover:border-[#A4AC96] transition-colors duration-300"
+                >
+                  <input
+                    ref={fileInputRef}
+                    id="space-image-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                  />
+                  <Upload
+                    size={20}
+                    className="text-textSecondary"
+                    strokeWidth={1.5}
+                  />
+                  <span
+                    className="text-[13px] text-textSecondary"
+                    style={{
+                      fontFamily: "'Inter', sans-serif",
+                      fontWeight: 400,
+                    }}
+                  >
+                    {isUploading ? "Uploading..." : "Upload image"}
+                  </span>
+                </label>
+              )}
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-6 mt-12">
+          {error && (
+            <div
+              className="mt-6 px-4 py-3 rounded-sm bg-red-500/10 border border-red-500/20 text-[13px] text-red-600"
+              style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400 }}
+            >
+              {error}
+            </div>
+          )}
+
+          <div className="flex items-center justify-end gap-6 mt-6">
             <button
+              type="button"
               onClick={handleCancel}
               className="text-[13px] text-textSecondary hover:text-[#626262] transition-colors duration-300"
               style={{
@@ -244,8 +537,11 @@ export function SpaceFormDialog({
               Cancel
             </button>
             <button
+              type="button"
               onClick={handleSubmit}
-              disabled={!formData.name.trim()}
+              disabled={
+                mode === "edit" ? !formData.name.trim() : !canSubmitCreate
+              }
               className="px-8 py-3 bg-foreground text-background text-[13px] hover:bg-[#3d3d3d] transition-colors duration-300 disabled:opacity-30 disabled:cursor-not-allowed"
               style={{
                 fontFamily: "'Inter', sans-serif",
@@ -253,7 +549,11 @@ export function SpaceFormDialog({
                 letterSpacing: "0.03em",
               }}
             >
-              {mode === "edit" ? "Update" : "Create Space"}
+              {mode === "edit"
+                ? "Update"
+                : isSubmitting || isUploading
+                  ? "Creating..."
+                  : "Create Space"}
             </button>
           </div>
         </div>

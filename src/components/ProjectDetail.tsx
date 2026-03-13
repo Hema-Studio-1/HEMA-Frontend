@@ -1,3 +1,4 @@
+import type { SpaceWithRelations } from "@/types/space";
 import { ArrowLeft, MoreVertical, Plus } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { AssignTeamMemberDialog } from "./AssignTeamMemberDialog";
@@ -85,19 +86,14 @@ export function ProjectDetail({
   const [infoSpaceId, setInfoSpaceId] = useState<string | null>(null);
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
 
-  const handleCreateSpace = (data: {
-    name: string;
-    type: string;
-    category: string;
-    description: string;
-  }) => {
+  const handleCreateSpace = (space: SpaceWithRelations) => {
     const newSpace: Space = {
-      id: Date.now().toString(),
-      name: data.name.trim(),
+      id: space.id,
+      name: space.name.trim(),
       designCount: 0,
-      type: data.type,
-      category: data.category,
-      description: data.description || undefined,
+      type: typeof space.type === "string" ? space.type : space.type,
+      category: (space as unknown as { category?: string }).category || "Modern",
+      description: space.description || undefined,
     };
     setSpaces([...spaces, newSpace]);
     setIsCreating(false);

@@ -2,6 +2,7 @@ import { ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 interface CustomDropdownProps {
+  id?: string;
   value: string;
   onChange: (value: string) => void;
   options: { value: string; label: string }[];
@@ -11,6 +12,7 @@ interface CustomDropdownProps {
 }
 
 export function CustomDropdown({
+  id,
   value,
   onChange,
   options,
@@ -40,6 +42,7 @@ export function CustomDropdown({
   return (
     <div ref={dropdownRef} className={`relative ${className}`}>
       <button
+        id={id}
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={`w-full px-4 py-2.5 text-[13px] text-foreground rounded-md focus:outline-none transition-all duration-300 cursor-pointer flex items-center justify-between ${

@@ -1,4 +1,7 @@
+"use client";
+
 import { Sparkles } from "lucide-react";
+import { useSession } from "next-auth/react";
 import React from "react";
 
 interface HeroProps {
@@ -7,17 +10,22 @@ interface HeroProps {
 }
 
 export function Hero({ onStartAIFlow, onCreateSpace }: HeroProps) {
+  const { status } = useSession();
+  const isSessionReady = status !== "loading";
+  const isAuthenticated = status === "authenticated";
+  const isGenerateDisabled = !isSessionReady || !isAuthenticated;
+
   return (
     <div className="max-w-5xl">
       {/* Headline - Reduced size, tighter spacing */}
-      <h1 className="text-[56px] leading-[1.05] mb-4 text-foreground tracking-tight">
+      {/* <h1 className="text-[56px] leading-[1.05] mb-4 text-foreground tracking-tight">
         Design interiors with AI
-      </h1>
+      </h1> */}
 
       {/* Subtitle - Closer to headline */}
-      <p className="text-base text-textSecondary mb-8 leading-relaxed max-w-xl">
+      {/* <p className="text-base text-textSecondary mb-8 leading-relaxed max-w-xl">
         Generate architectural spaces. Explore materials, light, and atmosphere.
-      </p>
+      </p> */}
 
       {/* Unified Generation Strip - Full Width */}
       <div className="max-w-3xl">
@@ -31,7 +39,7 @@ export function Hero({ onStartAIFlow, onCreateSpace }: HeroProps) {
         >
           {/* Left Side - Text */}
           <div className="flex-1">
-            <p className="text-xl font-semibold tracking-tight font-primary text-foreground mb-1">
+            <p className="text-xl tracking-tight font-primary text-foreground mb-1 font-medium">
               Ready to generate your space
             </p>
             <p className="text-sm text-textSecondary">
@@ -41,13 +49,15 @@ export function Hero({ onStartAIFlow, onCreateSpace }: HeroProps) {
 
           {/* Right Side - Action Button */}
           <button
-            onClick={onCreateSpace}
-            className="flex items-center gap-2 px-8 py-3 bg-foreground text-background text-[13px] hover:bg-[#3d3d3d] transition-colors duration-300 flex-shrink-0 ml-8"
-            style={{
-              fontFamily: "'Inter', sans-serif",
-              fontWeight: 400,
-              letterSpacing: "0.03em",
-            }}
+            type="button"
+            onClick={onStartAIFlow}
+            disabled={isGenerateDisabled}
+            title={
+              !isAuthenticated && isSessionReady
+                ? "Sign in to generate"
+                : undefined
+            }
+            className="flex items-center gap-2 px-8 py-3 bg-foreground text-background text-[13px] hover:bg-[#3d3d3d] transition-colors duration-300 shrink-0 ml-8 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-foreground"
           >
             <Sparkles size={16} strokeWidth={1.5} />
             Generate

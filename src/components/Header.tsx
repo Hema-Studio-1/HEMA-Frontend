@@ -1,4 +1,5 @@
-import { Bell, User } from "lucide-react";
+import { Bell, Loader2, User } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useState } from "react";
 
 interface HeaderProps {
@@ -8,6 +9,7 @@ interface HeaderProps {
 
 export function Header({ onHomeClick, onNotificationsClick }: HeaderProps) {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const { data: session, status } = useSession();
 
   const notifications = [
     {
@@ -140,6 +142,42 @@ export function Header({ onHomeClick, onNotificationsClick }: HeaderProps) {
                     </button>
                   </div>
                 </div>
+              </>
+            )}
+          </div>
+
+          {/* Auth status indicator */}
+          <div
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px]"
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: 400,
+            }}
+          >
+            {status === "loading" && (
+              <>
+                <Loader2 size={14} className="animate-spin text-[#626262]" />
+                <span className="text-[#626262]">Connecting...</span>
+              </>
+            )}
+            {status === "authenticated" && (
+              <>
+                <span
+                  className="w-2 h-2 rounded-full bg-green-500 shrink-0"
+                  title="Authenticated"
+                />
+                <span className="text-[#1a1a1a]">
+                  {session?.user?.name || session?.user?.email || "Demo User"}
+                </span>
+              </>
+            )}
+            {status === "unauthenticated" && (
+              <>
+                <span
+                  className="w-2 h-2 rounded-full bg-red-500 shrink-0"
+                  title="Auth failed"
+                />
+                <span className="text-red-600">Auth Failed</span>
               </>
             )}
           </div>

@@ -1,15 +1,10 @@
+"use client";
+
+import { Step2Canvas } from "@/containers/ai-generation-flow/Step2Canvas";
+import { useAIGenerationFlowContext } from "@/contexts/AIGenerationFlowContext";
 import { Upload, X } from "lucide-react";
 import type React from "react";
 import type { Dispatch, SetStateAction } from "react";
-import type { Step } from "./types";
-
-interface StepCanvasPanelProps {
-  currentStep: Step;
-  uploadedImage: string | null;
-  setUploadedImage: Dispatch<SetStateAction<string | null>>;
-  showBeforeAfter: boolean;
-  setShowBeforeAfter: Dispatch<SetStateAction<boolean>>;
-}
 
 function BaseCanvas({ children }: { children: React.ReactNode }) {
   return (
@@ -86,25 +81,12 @@ function Step1Canvas({
             <>
               <Upload
                 size={32}
-                className="text-[#c5c5c5] mb-6"
+                className="mb-6"
                 strokeWidth={1.5}
               />
+              <p className="text-[18px] mb-2 font-primary">Upload your space</p>
               <p
-                className="text-[18px] text-[#c5c5c5] mb-2"
-                style={{
-                  fontFamily: "'Playfair Display', serif",
-                  fontWeight: 300,
-                }}
-              >
-                Upload your space
-              </p>
-              <p
-                className="text-[12px] text-[#d5d5d5]"
-                style={{
-                  fontFamily: "'Inter', sans-serif",
-                  fontWeight: 300,
-                  letterSpacing: "0.02em",
-                }}
+                className="text-[12px] text-textSecondary"
               >
                 Drag & drop or click to browse
               </p>
@@ -188,7 +170,10 @@ function BeforeAfterCanvas({
       <BaseCanvas>
         {uploadedImage ? (
           <>
-            <CanvasImage src={uploadedImage} alt={showBeforeAfter ? "Before" : afterLabel} />
+            <CanvasImage
+              src={uploadedImage}
+              alt={showBeforeAfter ? "Before" : afterLabel}
+            />
             {showHint && !showBeforeAfter ? (
               <p
                 className="absolute bottom-6 left-1/2 -translate-x-1/2 text-[11px] text-textSecondary bg-background/90 backdrop-blur-sm px-3 py-2 rounded-sm"
@@ -210,28 +195,36 @@ function BeforeAfterCanvas({
   );
 }
 
-export function StepCanvasPanel({
-  currentStep,
-  uploadedImage,
-  setUploadedImage,
-  showBeforeAfter,
-  setShowBeforeAfter,
-}: StepCanvasPanelProps) {
+export function StepCanvasPanel() {
+  const { currentStep, step1, step2, step5 } = useAIGenerationFlowContext();
+  const baseImage = step1.uploadedImageUrl ?? step1.uploadedImage;
+  const cleanedImage = step2.cleanedImageUrl;
+  const uploadedImage = cleanedImage ?? baseImage;
+
   if (currentStep === 1) {
     return (
       <Step1Canvas
-        uploadedImage={uploadedImage}
-        setUploadedImage={setUploadedImage}
+        uploadedImage={baseImage}
+        setUploadedImage={step1.setUploadedImage}
       />
     );
   }
 
   if (currentStep === 2) {
     return (
-      <StaticImageCanvas
-        uploadedImage={uploadedImage}
-        alt="Space to clear"
-        caption="Select furniture you want to remove"
+      <Step2Canvas
+        imageUrl={baseImage}
+        detectedItems={step2.detectedFurniture}
+        selectedItemIds={step2.selectedFurniture}
+        onItemToggle={(itemId) => {
+          if (step2.selectedFurniture.includes(itemId)) {
+            step2.setSelectedFurniture(
+              step2.selectedFurniture.filter((id) => id !== itemId),
+            );
+          } else {
+            step2.setSelectedFurniture([...step2.selectedFurniture, itemId]);
+          }
+        }}
       />
     );
   }
@@ -241,15 +234,17 @@ export function StepCanvasPanel({
   }
 
   if (currentStep === 4) {
-    return <StaticImageCanvas uploadedImage={uploadedImage} alt="Room reference" />;
+    return (
+      <StaticImageCanvas uploadedImage={uploadedImage} alt="Room reference" />
+    );
   }
 
   if (currentStep === 5) {
     return (
       <BeforeAfterCanvas
         uploadedImage={uploadedImage}
-        showBeforeAfter={showBeforeAfter}
-        setShowBeforeAfter={setShowBeforeAfter}
+        showBeforeAfter={step5.showBeforeAfter}
+        setShowBeforeAfter={step5.setShowBeforeAfter}
         afterLabel="After"
         showHint
       />
@@ -259,8 +254,8 @@ export function StepCanvasPanel({
   return (
     <BeforeAfterCanvas
       uploadedImage={uploadedImage}
-      showBeforeAfter={showBeforeAfter}
-      setShowBeforeAfter={setShowBeforeAfter}
+      showBeforeAfter={step5.showBeforeAfter}
+      setShowBeforeAfter={step5.setShowBeforeAfter}
       afterLabel="Final design"
     />
   );

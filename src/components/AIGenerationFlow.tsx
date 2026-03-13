@@ -1,57 +1,62 @@
-import { ArrowLeft, Maximize2, MessageSquare, Minimize2, RefreshCw } from "lucide-react";
-import { useEffect, useState } from "react";
-import { CommentsPanel } from "./CommentsPanel";
+"use client";
+
+import { Button } from "@/components/ui/button";
 import {
   STEPS,
   VERSION_HISTORY,
-} from "./containers/ai-generation-flow/constants";
-import { StepCanvasPanel } from "./containers/ai-generation-flow/StepCanvasPanel";
-import { StepControlsPanel } from "./containers/ai-generation-flow/StepControlsPanel";
-import { StepIndicator } from "./containers/ai-generation-flow/StepIndicator";
-import type { ChatMessage, Dimensions, FlowTab, Step } from "./containers/ai-generation-flow/types";
+} from "@/containers/ai-generation-flow/constants";
+import { StepCanvasPanel } from "@/containers/ai-generation-flow/StepCanvasPanel";
+import { StepControlsPanel } from "@/containers/ai-generation-flow/StepControlsPanel";
+import { StepIndicator } from "@/containers/ai-generation-flow/StepIndicator";
+import { useAIGenerationFlowContext } from "@/contexts/AIGenerationFlowContext";
+// API calls commented out — using fake promises for flow to run without backend
+// import {
+//   detectFurniture,
+//   removeFurniture,
+//   updateSpaceDetails,
+// } from "@/services/api/spaces";
+import {
+  ArrowLeft,
+  Maximize2,
+  MessageSquare,
+  Minimize2,
+  RefreshCw,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { CommentsPanel } from "./CommentsPanel";
 
 interface AIGenerationFlowProps {
-  initialSpaceName?: string;
   onBack: () => void;
   onFullViewChange?: (isFullView: boolean) => void;
 }
 
 export function AIGenerationFlow({
-  initialSpaceName = "",
   onBack,
   onFullViewChange,
 }: AIGenerationFlowProps) {
-  const [currentStep, setCurrentStep] = useState<Step>(1);
-  const [spaceName, setSpaceName] = useState(initialSpaceName);
-  const [isFullView, setIsFullView] = useState(false);
-  const [isCommentsPanelOpen, setIsCommentsPanelOpen] = useState(false);
-  const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
-  const [isRestoreConfirmOpen, setIsRestoreConfirmOpen] = useState(false);
-  const [versionToRestore, setVersionToRestore] = useState<number | null>(null);
-  const [currentVersion, setCurrentVersion] = useState(3);
   const [showRegenerateTooltip, setShowRegenerateTooltip] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [activeTab, setActiveTab] = useState<FlowTab>("controls");
-  const [chatMessage, setChatMessage] = useState("");
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
-
-  const [roomType, setRoomType] = useState("");
-  const [dimensions, setDimensions] = useState<Dimensions>({
-    width: "",
-    depth: "",
-    height: "",
-  });
-  const [budget, setBudget] = useState("");
-  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
-  const [selectedFurniture, setSelectedFurniture] = useState<string[]>([]);
-  const [styleKeywords, setStyleKeywords] = useState("");
-  const [mood, setMood] = useState("");
-  const [materials, setMaterials] = useState("");
-  const [inspirationImages, setInspirationImages] = useState<string[]>([]);
-  const [selectedLayout, setSelectedLayout] = useState<number | null>(null);
-  const [showBeforeAfter, setShowBeforeAfter] = useState(false);
-  const [selectedProducts, setSelectedProducts] = useState<Record<string, number>>({});
-  const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  const {
+    currentStep,
+    setCurrentStep,
+    step1,
+    step2,
+    isFullView,
+    setIsFullView,
+    isCommentsPanelOpen,
+    setIsCommentsPanelOpen,
+    isVersionHistoryOpen,
+    setIsVersionHistoryOpen,
+    isRestoreConfirmOpen,
+    setIsRestoreConfirmOpen,
+    versionToRestore,
+    setVersionToRestore,
+    currentVersion,
+    setCurrentVersion,
+    handleClearDraft,
+  } = useAIGenerationFlowContext();
 
   useEffect(() => {
     if (onFullViewChange) {
@@ -59,34 +64,124 @@ export function AIGenerationFlow({
     }
   }, [isFullView, onFullViewChange]);
 
+  const normalizeRoomType = (roomType: string): string => {
+    const mapping: Record<string, string> = {
+      "living-room": "living_room",
+      "dining-room": "dining_room",
+      bedroom: "bedroom",
+      kitchen: "kitchen",
+      bathroom: "bathroom",
+      office: "office",
+    };
+    return mapping[roomType] || roomType;
+  };
+
+  const handleStep1Submit = async () => {
+    const baseImage = step1.uploadedImageUrl ?? step1.uploadedImage;
+    if (!baseImage) {
+      toast.error("Please upload an image first.");
+      return;
+    }
+
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
+    try {
+      // Fake API – comment out real calls when ready
+      // const updateResult = await updateSpaceDetails(step1.space!.id, updatePayload);
+      // const detectResult = await detectFurniture(step1.space!.id, { imageId });
+      await new Promise((r) => setTimeout(r, 600));
+
+      // Mock detected items with bounding boxes for testing
+      // In production, uncomment above and use:
+      // const detectedItems = detectResult.data.output.detections.map(
+      //   (detection, index) => ({
+      //     id: `${detection.detected}-${index}`,
+      //     label: detection.detected,
+      //     maskUrl: detection.maskUrl,
+      //     objectUrl: detection.objectUrl,
+      //     boundingBox: detection.boundingBox ?? null, // Use boundingBox if available
+      //   }),
+      // );
+      const mockDetectedItems = [
+        {
+          id: "sofa-0",
+          label: "Grey sofa",
+          maskUrl: "",
+          objectUrl: baseImage,
+          boundingBox: { x: 100, y: 200, width: 400, height: 300 },
+        },
+        {
+          id: "table-1",
+          label: "Coffee table",
+          maskUrl: "",
+          objectUrl: baseImage,
+          boundingBox: { x: 300, y: 450, width: 200, height: 150 },
+        },
+        {
+          id: "chair-2",
+          label: "Armchair",
+          maskUrl: "",
+          objectUrl: baseImage,
+          boundingBox: { x: 600, y: 250, width: 180, height: 200 },
+        },
+      ];
+      step2.setDetectedFurniture(mockDetectedItems);
+      step1.setUploadedImageUrl(baseImage);
+      setCurrentStep(2);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to process step 1",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleStep2Submit = async () => {
+    const baseImage = step1.uploadedImageUrl ?? step1.uploadedImage;
+    if (!baseImage) {
+      toast.error("Image not found. Please upload an image first.");
+      return;
+    }
+
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
+    try {
+      // Fake API – comment out real call when ready
+      // const removeResult = await removeFurniture(step1.space!.id, { imageId, maskUrls });
+      await new Promise((r) => setTimeout(r, 600));
+
+      step2.setCleanedImageUrl(baseImage);
+      setCurrentStep(3);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to process step 2",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleNextStep = () => {
+    if (currentStep === 1) {
+      void handleStep1Submit();
+      return;
+    }
+    if (currentStep === 2) {
+      void handleStep2Submit();
+      return;
+    }
     if (currentStep < 6) {
-      setCurrentStep((currentStep + 1) as Step);
+      setCurrentStep((currentStep + 1) as 1 | 2 | 3 | 4 | 5 | 6);
     }
   };
 
   const handlePreviousStep = () => {
     if (currentStep > 1) {
-      setCurrentStep((currentStep - 1) as Step);
+      setCurrentStep((currentStep - 1) as 1 | 2 | 3 | 4 | 5 | 6);
     }
-  };
-
-  const handleClearDraft = () => {
-    setSpaceName(initialSpaceName);
-    setRoomType("");
-    setDimensions({ width: "", depth: "", height: "" });
-    setBudget("");
-    setUploadedImage(null);
-    setInspirationImages([]);
-    setSelectedFurniture([]);
-    setStyleKeywords("");
-    setMood("");
-    setMaterials("");
-    setSelectedLayout(null);
-    setShowBeforeAfter(false);
-    setSelectedProducts({});
-    setActiveFilters([]);
-    setCurrentStep(1);
   };
 
   const handleRegenerate = () => {
@@ -107,40 +202,24 @@ export function AIGenerationFlow({
     }
   };
 
-  const handleSendMessage = () => {
-    if (!chatMessage.trim()) return;
-    const newMessage: ChatMessage = {
-      id: Date.now().toString(),
-      text: chatMessage.trim(),
-      sender: "user",
-      timestamp: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-    };
-    setChatMessages([...chatMessages, newMessage]);
-    setChatMessage("");
-  };
-
   return (
     <div className="flex flex-col lg:h-full">
-      <div className="relative mb-6 flex items-center justify-between flex-shrink-0">
-        <button
-          type="button"
-          onClick={onBack}
-          className="flex items-center gap-2 text-[13px] text-textSecondary hover:text-[#626262] transition-colors duration-300"
-          style={{ fontFamily: "'Inter', sans-serif", fontWeight: 300, letterSpacing: "0.02em" }}
-        >
+      <div className="relative mb-6 flex items-center justify-between shrink-0">
+        <Button onClick={onBack} variant="link">
           <ArrowLeft size={16} strokeWidth={1.5} />
           Back
-        </button>
+        </Button>
 
-        {spaceName ? (
+        {step1.spaceName ? (
           <div
             className="absolute left-1/2 -translate-x-1/2 text-[13px] text-textSecondary"
-            style={{ fontFamily: "'Inter', sans-serif", fontWeight: 300, letterSpacing: "0.02em" }}
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: 300,
+              letterSpacing: "0.02em",
+            }}
           >
-            {spaceName}
+            {step1.spaceName}
           </div>
         ) : null}
 
@@ -159,7 +238,11 @@ export function AIGenerationFlow({
             {showRegenerateTooltip ? (
               <div
                 className="absolute top-full mt-2 left-1/2 -translate-x-1/2 px-2.5 py-1.5 bg-foreground text-background text-[11px] rounded-sm whitespace-nowrap pointer-events-none z-50"
-                style={{ fontFamily: "'Inter', sans-serif", fontWeight: 300, letterSpacing: "0.02em" }}
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 300,
+                  letterSpacing: "0.02em",
+                }}
               >
                 Regenerate
               </div>
@@ -173,7 +256,11 @@ export function AIGenerationFlow({
           >
             <span
               className="text-[10px] text-textSecondary tracking-wide uppercase"
-              style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, letterSpacing: "0.08em" }}
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 400,
+                letterSpacing: "0.08em",
+              }}
             >
               v{currentVersion}
             </span>
@@ -183,7 +270,11 @@ export function AIGenerationFlow({
             type="button"
             onClick={() => setIsCommentsPanelOpen(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-textSecondary hover:text-[#626262] hover:bg-[#E8E6E3]/50 transition-colors duration-300"
-            style={{ fontFamily: "'Inter', sans-serif", fontWeight: 300, letterSpacing: "0.02em" }}
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: 300,
+              letterSpacing: "0.02em",
+            }}
           >
             <MessageSquare size={16} strokeWidth={1.5} />
             <span className="text-[12px]">Comments</span>
@@ -196,93 +287,64 @@ export function AIGenerationFlow({
             style={{ marginTop: "-10px" }}
             aria-label={isFullView ? "Exit full view" : "Enter full view"}
           >
-            {isFullView ? <Minimize2 size={20} strokeWidth={1.5} /> : <Maximize2 size={20} strokeWidth={1.5} />}
+            {isFullView ? (
+              <Minimize2 size={20} strokeWidth={1.5} />
+            ) : (
+              <Maximize2 size={20} strokeWidth={1.5} />
+            )}
           </button>
         </div>
       </div>
 
       <div className="relative flex-1 flex items-center min-h-0">
         <div className="relative w-full max-w-[1640px] mx-auto">
-          <StepIndicator steps={STEPS} currentStep={currentStep} setCurrentStep={setCurrentStep} />
+          <StepIndicator
+            steps={STEPS}
+            currentStep={currentStep}
+            setCurrentStep={setCurrentStep}
+          />
 
           <div className="grid gap-x-8 gap-y-4 xl:pr-24 lg:grid-cols-[1fr_minmax(290px,300px)] xl:grid-cols-[1fr_minmax(320px,380px)]">
-            <div className="flex flex-col gap-3 min-h-0">
+            <div className="flex flex-col gap-1.5 min-h-0">
               <div className="min-h-0">
-                <StepCanvasPanel
-                  currentStep={currentStep}
-                  uploadedImage={uploadedImage}
-                  setUploadedImage={setUploadedImage}
-                  showBeforeAfter={showBeforeAfter}
-                  setShowBeforeAfter={setShowBeforeAfter}
-                />
+                <StepCanvasPanel />
               </div>
 
               <div className="hidden lg:flex items-center justify-between">
                 <div className="flex items-center gap-8">
-                  <button
-                    type="button"
-                    onClick={handleClearDraft}
-                    className="text-[13px] text-textSecondary hover:text-[#626262] transition-colors duration-300"
-                    style={{ fontFamily: "'Inter', sans-serif", fontWeight: 300, letterSpacing: "0.02em" }}
-                  >
+                  <Button onClick={() => handleClearDraft()} variant="link">
                     Clear draft
-                  </button>
-                  {currentStep > 1 ? (
-                    <button
-                      type="button"
-                      onClick={handlePreviousStep}
-                      className="text-[13px] text-textSecondary hover:text-foreground transition-colors duration-300"
-                      style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, letterSpacing: "0.02em" }}
-                    >
-                      Go back
-                    </button>
-                  ) : null}
+                  </Button>
+                  <Button
+                    onClick={handlePreviousStep}
+                    variant="link"
+                    disabled={currentStep === 1}
+                  >
+                    Go back
+                  </Button>
                 </div>
 
-                <button
-                  type="button"
+                <Button
                   onClick={handleNextStep}
-                  disabled={currentStep === 1 && !spaceName.trim()}
-                  className="text-[13px] text-foreground hover:text-[#626262] transition-colors duration-300 disabled:opacity-30 disabled:cursor-not-allowed"
-                  style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, letterSpacing: "0.02em" }}
+                  disabled={
+                    (currentStep === 1 &&
+                      !(step1.uploadedImageUrl ?? step1.uploadedImage)) ||
+                    isSubmitting
+                  }
                 >
-                  {currentStep === 6 ? "Complete" : currentStep === 3 ? "Generate design" : "Next step"}
-                </button>
+                  {isSubmitting
+                    ? "Processing..."
+                    : currentStep === 6
+                      ? "Complete"
+                      : currentStep === 3
+                        ? "Generate design"
+                        : "Next step"}
+                </Button>
               </div>
             </div>
 
             <div className="min-h-0 lg:h-[550px] lg:flex lg:flex-col">
-              <StepControlsPanel
-                currentStep={currentStep}
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-                chatMessages={chatMessages}
-                chatMessage={chatMessage}
-                setChatMessage={setChatMessage}
-                onSendMessage={handleSendMessage}
-                roomType={roomType}
-                setRoomType={setRoomType}
-                dimensions={dimensions}
-                setDimensions={setDimensions}
-                budget={budget}
-                setBudget={setBudget}
-                selectedFurniture={selectedFurniture}
-                setSelectedFurniture={setSelectedFurniture}
-                styleKeywords={styleKeywords}
-                setStyleKeywords={setStyleKeywords}
-                mood={mood}
-                setMood={setMood}
-                materials={materials}
-                setMaterials={setMaterials}
-                inspirationImages={inspirationImages}
-                setInspirationImages={setInspirationImages}
-                selectedLayout={selectedLayout}
-                setSelectedLayout={setSelectedLayout}
-                activeFilters={activeFilters}
-                setActiveFilters={setActiveFilters}
-                selectedProducts={selectedProducts}
-                setSelectedProducts={setSelectedProducts}
-              />
+              <StepControlsPanel />
             </div>
           </div>
 
@@ -290,42 +352,54 @@ export function AIGenerationFlow({
             <div className="flex items-center gap-8">
               <button
                 type="button"
-                onClick={handleClearDraft}
+                onClick={() => handleClearDraft()}
                 className="text-[13px] text-textSecondary hover:text-[#626262] transition-colors duration-300"
-                style={{ fontFamily: "'Inter', sans-serif", fontWeight: 300, letterSpacing: "0.02em" }}
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 300,
+                  letterSpacing: "0.02em",
+                }}
               >
                 Clear draft
               </button>
 
-              {currentStep > 1 ? (
-                <button
-                  type="button"
-                  onClick={handlePreviousStep}
-                  className="text-[13px] text-textSecondary hover:text-foreground transition-colors duration-300"
-                  style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, letterSpacing: "0.02em" }}
-                >
-                  Go back
-                </button>
-              ) : null}
+              <button
+                type="button"
+                onClick={handlePreviousStep}
+                disabled={currentStep === 1}
+                className="text-[13px] text-textSecondary hover:text-foreground transition-colors duration-300 disabled:opacity-30 disabled:cursor-not-allowed"
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 400,
+                  letterSpacing: "0.02em",
+                }}
+              >
+                Go back
+              </button>
             </div>
-
-            <button
-              type="button"
+            <Button
               onClick={handleNextStep}
-              disabled={currentStep === 1 && !spaceName.trim()}
-              className="text-[13px] text-foreground hover:text-[#626262] transition-colors duration-300 disabled:opacity-30 disabled:cursor-not-allowed"
-              style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, letterSpacing: "0.02em" }}
+              disabled={
+                (currentStep === 1 &&
+                  !(step1.uploadedImageUrl ?? step1.uploadedImage)) ||
+                isSubmitting
+              }
             >
-              {currentStep === 6 ? "Complete" : currentStep === 3 ? "Generate design" : "Next step"}
-            </button>
+              {isSubmitting
+                ? "Processing..."
+                : currentStep === 6
+                  ? "Complete"
+                  : currentStep === 3
+                    ? "Generate design"
+                    : "Next step"}
+            </Button>
           </div>
         </div>
       </div>
-
       <CommentsPanel
         isOpen={isCommentsPanelOpen}
         onClose={() => setIsCommentsPanelOpen(false)}
-        spaceName={spaceName || "this space"}
+        spaceName={step1.spaceName || "this space"}
       />
 
       {isVersionHistoryOpen ? (
@@ -336,7 +410,11 @@ export function AIGenerationFlow({
           >
             <h3
               className="text-[16px] text-foreground mb-6"
-              style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, letterSpacing: "0.01em" }}
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 400,
+                letterSpacing: "0.01em",
+              }}
             >
               Version history
             </h3>
@@ -353,7 +431,8 @@ export function AIGenerationFlow({
                         className="text-[13px] text-foreground"
                         style={{
                           fontFamily: "'Inter', sans-serif",
-                          fontWeight: item.version === currentVersion ? 400 : 300,
+                          fontWeight:
+                            item.version === currentVersion ? 400 : 300,
                           letterSpacing: "0.01em",
                         }}
                       >
@@ -361,14 +440,22 @@ export function AIGenerationFlow({
                       </span>
                       <span
                         className="text-[13px] text-textSecondary"
-                        style={{ fontFamily: "'Inter', sans-serif", fontWeight: 300, letterSpacing: "0.01em" }}
+                        style={{
+                          fontFamily: "'Inter', sans-serif",
+                          fontWeight: 300,
+                          letterSpacing: "0.01em",
+                        }}
                       >
                         {item.label}
                       </span>
                       {item.version === currentVersion ? (
                         <span
                           className="text-[10px] text-textSecondary ml-1"
-                          style={{ fontFamily: "'Inter', sans-serif", fontWeight: 300, letterSpacing: "0.02em" }}
+                          style={{
+                            fontFamily: "'Inter', sans-serif",
+                            fontWeight: 300,
+                            letterSpacing: "0.02em",
+                          }}
                         >
                           (current)
                         </span>
@@ -376,7 +463,11 @@ export function AIGenerationFlow({
                     </div>
                     <p
                       className="text-[11px] text-[#c5c5c5]"
-                      style={{ fontFamily: "'Inter', sans-serif", fontWeight: 300, letterSpacing: "0.01em" }}
+                      style={{
+                        fontFamily: "'Inter', sans-serif",
+                        fontWeight: 300,
+                        letterSpacing: "0.01em",
+                      }}
                     >
                       {item.timestamp}
                     </p>
@@ -386,7 +477,11 @@ export function AIGenerationFlow({
                     <button
                       type="button"
                       className="text-[12px] text-textSecondary hover:text-foreground transition-colors duration-300"
-                      style={{ fontFamily: "'Inter', sans-serif", fontWeight: 300, letterSpacing: "0.01em" }}
+                      style={{
+                        fontFamily: "'Inter', sans-serif",
+                        fontWeight: 300,
+                        letterSpacing: "0.01em",
+                      }}
                     >
                       View
                     </button>
@@ -395,7 +490,11 @@ export function AIGenerationFlow({
                         type="button"
                         onClick={() => handleRestoreClick(item.version)}
                         className="text-[12px] text-textSecondary hover:text-foreground transition-colors duration-300"
-                        style={{ fontFamily: "'Inter', sans-serif", fontWeight: 300, letterSpacing: "0.01em" }}
+                        style={{
+                          fontFamily: "'Inter', sans-serif",
+                          fontWeight: 300,
+                          letterSpacing: "0.01em",
+                        }}
                       >
                         Restore
                       </button>
@@ -409,7 +508,11 @@ export function AIGenerationFlow({
               type="button"
               onClick={() => setIsVersionHistoryOpen(false)}
               className="mt-6 w-full text-[12px] text-textSecondary hover:text-foreground transition-colors duration-300"
-              style={{ fontFamily: "'Inter', sans-serif", fontWeight: 300, letterSpacing: "0.02em" }}
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 300,
+                letterSpacing: "0.02em",
+              }}
             >
               Close
             </button>
@@ -439,7 +542,11 @@ export function AIGenerationFlow({
                 type="button"
                 onClick={() => setIsRestoreConfirmOpen(false)}
                 className="text-[12px] text-textSecondary hover:text-foreground transition-colors duration-300"
-                style={{ fontFamily: "'Inter', sans-serif", fontWeight: 300, letterSpacing: "0.02em" }}
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 300,
+                  letterSpacing: "0.02em",
+                }}
               >
                 Cancel
               </button>
@@ -447,7 +554,11 @@ export function AIGenerationFlow({
                 type="button"
                 onClick={handleRestoreConfirm}
                 className="text-[12px] text-foreground hover:text-[#626262] transition-colors duration-300"
-                style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, letterSpacing: "0.02em" }}
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 400,
+                  letterSpacing: "0.02em",
+                }}
               >
                 Restore version
               </button>
