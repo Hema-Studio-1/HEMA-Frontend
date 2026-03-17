@@ -132,3 +132,13 @@ export async function uploadSingleImage(
 ): Promise<UploadResult> {
   return uploadSingleFile(file, bucket, path);
 }
+
+/** Get signed URL for a storage path (e.g. from API responses) */
+export async function getSignedUrlForPath(path: string): Promise<string> {
+  if (!path?.trim()) return "";
+  try {
+    return await getSignedImgUrlServer(path);
+  } catch {
+    return "";
+  }
+}

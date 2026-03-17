@@ -2,6 +2,7 @@
 
 import type {
     ChatMessage,
+    DetectedFurnitureGroup,
     DetectedFurnitureItem,
     Dimensions,
     FlowTab,
@@ -54,22 +55,40 @@ export function AIGenerationFlowProvider({
   const [dimensions, setDimensions] = useState<Dimensions>(defaultDimensions);
   const [budget, setBudget] = useState<number | null>(null);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [imageId, setImageId] = useState<string | null>(null);
+  const [imageDimensions, setImageDimensions] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
 
   // Step 2
   const [detectedFurniture, setDetectedFurniture] = useState<
     DetectedFurnitureItem[]
   >([]);
+  const [detectedFurnitureGrouped, setDetectedFurnitureGrouped] = useState<
+    DetectedFurnitureGroup[]
+  >([]);
   const [selectedFurniture, setSelectedFurniture] = useState<string[]>([]);
   const [cleanedImageUrl, setCleanedImageUrl] = useState<string | null>(null);
+  const [intermediateImageId, setIntermediateImageId] = useState<string | null>(
+    null,
+  );
 
   // Step 3
   const [styleKeywords, setStyleKeywords] = useState("");
   const [mood, setMood] = useState("");
   const [materials, setMaterials] = useState("");
   const [inspirationImages, setInspirationImages] = useState<string[]>([]);
+  const [inspirationImageId, setInspirationImageId] = useState<string | null>(
+    null,
+  );
+  const [inspirationImageUrl, setInspirationImageUrl] = useState<string | null>(
+    null,
+  );
 
   // Step 4
   const [selectedLayout, setSelectedLayout] = useState<number | null>(null);
+  const [finalImageUrl, setFinalImageUrl] = useState<string | null>(null);
 
   // Step 5
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
@@ -83,6 +102,15 @@ export function AIGenerationFlowProvider({
 
   // Flow navigation
   const [currentStep, setCurrentStep] = useState<Step>(1);
+  const [maxStepReached, setMaxStepReached] = useState<Step>(1);
+
+  useEffect(() => {
+    setMaxStepReached((max) => (currentStep > max ? currentStep : max));
+  }, [currentStep]);
+
+  // Step loading & error (shown in target step after advance)
+  const [stepLoadingFor, setStepLoadingFor] = useState<2 | 3 | 4 | null>(null);
+  const [stepErrorMessage, setStepErrorMessage] = useState<string | null>(null);
 
   // Chat
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -111,14 +139,22 @@ export function AIGenerationFlowProvider({
     setDimensions(defaultDimensions);
     setBudget(null);
     setUploadedImage(null);
+    setImageId(null);
+    setImageDimensions(null);
     setDetectedFurniture([]);
     setSelectedFurniture([]);
     setCleanedImageUrl(null);
+    setIntermediateImageId(null);
     setStyleKeywords("");
     setMood("");
     setMaterials("");
     setInspirationImages([]);
+    setInspirationImageId(null);
+    setInspirationImageUrl(null);
     setSelectedLayout(null);
+    setFinalImageUrl(null);
+    setStepLoadingFor(null);
+    setStepErrorMessage(null);
     setActiveFilters([]);
     setShowBeforeAfter(false);
     setCustomProductImages([]);
@@ -152,6 +188,8 @@ export function AIGenerationFlowProvider({
       dimensions,
       budget,
       uploadedImage,
+      imageId,
+      imageDimensions,
       setSpace,
       setUploadedImageUrl,
       setSpaceName,
@@ -161,6 +199,8 @@ export function AIGenerationFlowProvider({
       setDimensions,
       setBudget,
       setUploadedImage,
+      setImageId,
+      setImageDimensions,
     }),
     [
       space,
@@ -172,19 +212,31 @@ export function AIGenerationFlowProvider({
       dimensions,
       budget,
       uploadedImage,
+      imageId,
+      imageDimensions,
     ],
   );
 
   const step2: Step2Context = useMemo(
     () => ({
       detectedFurniture,
+      detectedFurnitureGrouped,
       selectedFurniture,
       cleanedImageUrl,
+      intermediateImageId,
       setDetectedFurniture,
+      setDetectedFurnitureGrouped,
       setSelectedFurniture,
       setCleanedImageUrl,
+      setIntermediateImageId,
     }),
-    [detectedFurniture, selectedFurniture, cleanedImageUrl],
+    [
+      detectedFurniture,
+      detectedFurnitureGrouped,
+      selectedFurniture,
+      cleanedImageUrl,
+      intermediateImageId,
+    ],
   );
 
   const step3: Step3Context = useMemo(
@@ -193,21 +245,34 @@ export function AIGenerationFlowProvider({
       mood,
       materials,
       inspirationImages,
+      inspirationImageId,
+      inspirationImageUrl,
       setStyleKeywords,
       setMood,
       setMaterials,
       setInspirationImages,
+      setInspirationImageId,
+      setInspirationImageUrl,
     }),
-    [styleKeywords, mood, materials, inspirationImages],
+    [
+      styleKeywords,
+      mood,
+      materials,
+      inspirationImages,
+      inspirationImageId,
+      inspirationImageUrl,
+    ],
   );
 
   const step4: Step4Context = useMemo(
     () => ({
       selectedLayout,
       inspirationImages,
+      finalImageUrl,
       setSelectedLayout,
+      setFinalImageUrl,
     }),
-    [selectedLayout, inspirationImages],
+    [selectedLayout, inspirationImages, finalImageUrl],
   );
 
   const step5: Step5Context = useMemo(
@@ -240,6 +305,7 @@ export function AIGenerationFlowProvider({
       step6,
       currentStep,
       setCurrentStep,
+      maxStepReached,
       chatMessages,
       setChatMessages,
       chatMessage,
@@ -258,6 +324,10 @@ export function AIGenerationFlowProvider({
       setVersionToRestore,
       currentVersion,
       setCurrentVersion,
+      stepLoadingFor,
+      stepErrorMessage,
+      setStepLoadingFor,
+      setStepErrorMessage,
       handleClearDraft,
       handleSendMessage,
     }),
@@ -269,6 +339,7 @@ export function AIGenerationFlowProvider({
       step5,
       step6,
       currentStep,
+      maxStepReached,
       chatMessages,
       chatMessage,
       activeTab,
@@ -278,6 +349,8 @@ export function AIGenerationFlowProvider({
       isRestoreConfirmOpen,
       versionToRestore,
       currentVersion,
+      stepLoadingFor,
+      stepErrorMessage,
       handleClearDraft,
       handleSendMessage,
     ],

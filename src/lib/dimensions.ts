@@ -1,5 +1,9 @@
 import type { Dimensions } from "@/containers/ai-generation-flow/types";
-import type { SpaceDimension, SpaceWithRelations } from "@/types/space";
+import type {
+  MeasureRoomResponse,
+  SpaceDimension,
+  SpaceWithRelations,
+} from "@/types/space";
 
 /**
  * Normalize dimension value from various formats (string/number) to number | null
@@ -82,4 +86,20 @@ export function extractSpaceDimensions(
   }
 
   return { width: null, depth: null, height: null };
+}
+
+/**
+ * Extract dimensions from measure-room API response (raw dimensions, no space wrapper).
+ * Maps depth/length to depth (both refer to room depth).
+ */
+export function extractDimensionsFromMeasureRoom(
+  data: MeasureRoomResponse | null,
+): Dimensions {
+  if (!data || typeof data !== "object") {
+    return { width: null, depth: null, height: null };
+  }
+  const width = toDimensionNumber(data.width);
+  const depth = toDimensionNumber(data.depth ?? data.length);
+  const height = toDimensionNumber(data.height);
+  return { width, depth, height };
 }

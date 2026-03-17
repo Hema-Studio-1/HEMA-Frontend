@@ -1,26 +1,30 @@
 "use client";
 
+import { uploadImages } from "@/actions/upload-files";
 import { StepChatInterface } from "@/components/StepChatInterface";
+import { StepLoader } from "@/components/StepLoader";
 import { StepTabSwitcher } from "@/components/StepTabSwitcher";
 import { Button } from "@/components/ui/button";
 import { useAIGenerationFlowContext } from "@/contexts/AIGenerationFlowContext";
+import { createImage } from "@/services/api/images";
+import { ImageType } from "@/types/image";
 import { Plus, Upload, X } from "lucide-react";
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import {
-    MOCK_PROJECTS,
-    REFINE_FILTERS,
-    ROOM_TYPE_OPTIONS,
-    SHOPPING_ITEMS,
-    STEPS,
-    UNSPLASH_IMAGES_BY_CATEGORY,
+  MOCK_PROJECTS,
+  REFINE_FILTERS,
+  ROOM_TYPE_OPTIONS,
+  SHOPPING_ITEMS,
+  STEPS,
+  UNSPLASH_IMAGES_BY_CATEGORY,
 } from "./constants";
 import type {
-    ChatMessage,
-    DetectedFurnitureItem,
-    Dimensions,
-    FlowTab,
-    Step,
+  ChatMessage,
+  DetectedFurnitureItem,
+  Dimensions,
+  FlowTab,
+  Step,
 } from "./types";
 
 interface SharedPanelProps {
@@ -137,6 +141,7 @@ function Step1Controls({
   return (
     <StepPanelShell {...shared}>
       <div className="space-y-8">
+        {/* Project dropdown - commented out
         <div>
           <p className="block text-xs text-primary mb-2 uppercase tracking-widest font-medium">
             Project
@@ -188,6 +193,7 @@ function Step1Controls({
             ) : null}
           </div>
         </div>
+        */}
 
         <div>
           <p className="block text-xs text-primary mb-2 uppercase tracking-widest font-medium">
@@ -310,13 +316,22 @@ function Step1Controls({
   );
 }
 
+function formatCategoryLabel(category: string): string {
+  return category
+    .split(/[-_]/)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+}
+
 function Step2Controls({
   detectedFurniture,
+  detectedFurnitureGrouped,
   selectedFurniture,
   setSelectedFurniture,
   ...shared
 }: SharedPanelProps & {
   detectedFurniture: import("@/containers/ai-generation-flow/types").DetectedFurnitureItem[];
+  detectedFurnitureGrouped: import("@/containers/ai-generation-flow/types").DetectedFurnitureGroup[];
   selectedFurniture: string[];
   setSelectedFurniture: (value: string[]) => void;
 }) {
@@ -378,25 +393,39 @@ function Step2Controls({
             No furniture detected yet. Complete step 1 to detect furniture.
           </p>
         ) : (
-          <div className="space-y-2">
-            {detectedFurniture.map((item) => (
-              <button
-                type="button"
-                key={item.id}
-                onClick={() => toggleFurniture(item.id)}
-                className={`w-full text-left px-4 py-3 rounded-sm transition-colors duration-300 ${
-                  selectedFurniture.includes(item.id)
-                    ? "bg-foreground text-background"
-                    : "bg-[#FDFCFB] text-foreground hover:bg-[#FAF9F7]"
-                }`}
-                style={{
-                  fontFamily: "'Inter', sans-serif",
-                  fontWeight: 300,
-                  fontSize: "14px",
-                }}
-              >
-                {item.label}
-              </button>
+          <div className="space-y-4">
+            {detectedFurnitureGrouped.map((group) => (
+              <div key={group.category} className="space-y-2">
+                <p
+                  className="text-[11px] uppercase tracking-widest text-textSecondary font-medium"
+                  style={{
+                    fontFamily: "'Inter', sans-serif",
+                  }}
+                >
+                  {formatCategoryLabel(group.category)}
+                </p>
+                <div className="space-y-1.5">
+                  {group.items.map((item) => (
+                    <button
+                      type="button"
+                      key={item.id}
+                      onClick={() => toggleFurniture(item.id)}
+                      className={`w-full text-left px-4 py-2.5 rounded-sm transition-colors duration-300 ${
+                        selectedFurniture.includes(item.id)
+                          ? "bg-foreground text-background"
+                          : "bg-[#FDFCFB] text-foreground hover:bg-[#FAF9F7]"
+                      }`}
+                      style={{
+                        fontFamily: "'Inter', sans-serif",
+                        fontWeight: 300,
+                        fontSize: "14px",
+                      }}
+                    >
+                      {item.label.replace(/_/g, " ")}
+                    </button>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         )}
@@ -417,8 +446,9 @@ function Step3Controls({
   setMood,
   materials,
   setMaterials,
-  inspirationImages,
-  setInspirationImages,
+  inspirationImageUrl,
+  setInspirationImageId,
+  setInspirationImageUrl,
   ...shared
 }: SharedPanelProps & {
   styleKeywords: string;
@@ -427,23 +457,43 @@ function Step3Controls({
   setMood: (value: string) => void;
   materials: string;
   setMaterials: (value: string) => void;
-  inspirationImages: string[];
-  setInspirationImages: React.Dispatch<React.SetStateAction<string[]>>;
+  inspirationImageUrl: string | null;
+  setInspirationImageId: (value: string | null) => void;
+  setInspirationImageUrl: (value: string | null) => void;
 }) {
-  const handleInspirationUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
-    Array.from(files).forEach((file) => {
-      const reader = new FileReader();
-      reader.onloadend = () =>
-        setInspirationImages((prev) => [...prev, reader.result as string]);
-      reader.readAsDataURL(file);
-    });
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleInspirationUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file || !file.type.startsWith("image/")) return;
+
+    setIsUploading(true);
+    try {
+      const [uploadResult] = await uploadImages(file, "hema");
+      if (!uploadResult.success || !uploadResult.path || !uploadResult.url) {
+        return;
+      }
+      // storagePath: path after bucket name (e.g. hema/filename.png)
+      const createResult = await createImage({
+        type: ImageType.INSPIRATION,
+        storagePath: uploadResult.path,
+      });
+      if (createResult.error || !createResult.data) {
+        return;
+      }
+      setInspirationImageId(createResult.data.id);
+      setInspirationImageUrl(uploadResult.url);
+    } finally {
+      setIsUploading(false);
+    }
     e.target.value = "";
   };
 
-  const removeInspirationImage = (index: number) => {
-    setInspirationImages((prev) => prev.filter((_, i) => i !== index));
+  const removeInspirationImage = () => {
+    setInspirationImageId(null);
+    setInspirationImageUrl(null);
   };
 
   return (
@@ -457,7 +507,10 @@ function Step3Controls({
           >
             Inspiration Images
           </h3>
-          <label htmlFor="inspiration-upload-panel">
+          <label
+            htmlFor="inspiration-upload-panel"
+            className={isUploading ? "pointer-events-none opacity-70" : ""}
+          >
             <div
               className="bg-[#FDFCFB] rounded-sm p-4 flex flex-col items-center justify-center cursor-pointer transition-colors duration-300 hover:bg-[#FAF9F7]"
               style={{ minHeight: "60px", border: "1px dashed #E8E6E3" }}
@@ -475,7 +528,7 @@ function Step3Controls({
                   letterSpacing: "0.01em",
                 }}
               >
-                Add inspiration image
+                {isUploading ? "Uploading…" : "Add inspiration image"}
               </p>
             </div>
           </label>
@@ -483,31 +536,26 @@ function Step3Controls({
             id="inspiration-upload-panel"
             type="file"
             accept="image/*"
-            multiple
             className="hidden"
             onChange={handleInspirationUpload}
+            disabled={isUploading}
           />
-          {inspirationImages.length > 0 ? (
+          {inspirationImageUrl ? (
             <div className="flex flex-wrap gap-2 mt-3">
-              {inspirationImages.map((src, idx) => (
-                <div
-                  key={`${src}-${idx}`}
-                  className="relative w-12 h-12 rounded-sm overflow-hidden bg-[#FDFCFB] shadow-sm flex-shrink-0"
+              <div className="relative w-12 h-12 rounded-sm overflow-hidden bg-[#FDFCFB] shadow-sm flex-shrink-0">
+                <img
+                  src={inspirationImageUrl}
+                  alt="Inspiration reference"
+                  className="w-full h-full object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={removeInspirationImage}
+                  className="absolute top-0 right-0 w-4 h-4 flex items-center justify-center rounded-full bg-foreground/80 hover:bg-foreground transition-colors"
                 >
-                  <img
-                    src={src}
-                    alt="Inspiration reference"
-                    className="w-full h-full object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeInspirationImage(idx)}
-                    className="absolute top-0 right-0 w-4 h-4 flex items-center justify-center rounded-full bg-foreground/80 hover:bg-foreground transition-colors"
-                  >
-                    <X size={8} strokeWidth={2} className="text-background" />
-                  </button>
-                </div>
-              ))}
+                  <X size={8} strokeWidth={2} className="text-background" />
+                </button>
+              </div>
             </div>
           ) : null}
         </div>
@@ -1085,7 +1133,13 @@ export function StepControlsPanel() {
     step4,
     step5,
     step6,
+    stepLoadingFor,
   } = useAIGenerationFlowContext();
+
+  const showPanelLoader =
+    stepLoadingFor === currentStep &&
+    stepLoadingFor !== null &&
+    [2, 3, 4].includes(currentStep);
 
   const shared = {
     activeTab,
@@ -1117,11 +1171,24 @@ export function StepControlsPanel() {
   }
 
   if (currentStep === 2) {
+    if (showPanelLoader) {
+      return (
+        <div className="lg:flex lg:flex-col lg:h-full">
+          <div className="flex-shrink-0">
+            <StepTabSwitcher activeTab={activeTab} onTabChange={setActiveTab} />
+          </div>
+          <div className="lg:flex-1 lg:overflow-y-auto lg:min-h-0 mt-4 flex items-center justify-center">
+            <StepLoader step={2} />
+          </div>
+        </div>
+      );
+    }
     return (
       <Step2Controls
         {...shared}
         currentStep={currentStep}
         detectedFurniture={step2.detectedFurniture}
+        detectedFurnitureGrouped={step2.detectedFurnitureGrouped}
         selectedFurniture={step2.selectedFurniture}
         setSelectedFurniture={step2.setSelectedFurniture}
       />
@@ -1129,6 +1196,18 @@ export function StepControlsPanel() {
   }
 
   if (currentStep === 3) {
+    if (showPanelLoader) {
+      return (
+        <div className="lg:flex lg:flex-col lg:h-full">
+          <div className="flex-shrink-0">
+            <StepTabSwitcher activeTab={activeTab} onTabChange={setActiveTab} />
+          </div>
+          <div className="lg:flex-1 lg:overflow-y-auto lg:min-h-0 mt-4 flex items-center justify-center">
+            <StepLoader step={3} />
+          </div>
+        </div>
+      );
+    }
     return (
       <Step3Controls
         {...shared}
@@ -1139,20 +1218,35 @@ export function StepControlsPanel() {
         setMood={step3.setMood}
         materials={step3.materials}
         setMaterials={step3.setMaterials}
-        inspirationImages={step3.inspirationImages}
-        setInspirationImages={step3.setInspirationImages}
+        inspirationImageUrl={step3.inspirationImageUrl}
+        setInspirationImageId={step3.setInspirationImageId}
+        setInspirationImageUrl={step3.setInspirationImageUrl}
       />
     );
   }
 
   if (currentStep === 4) {
+    if (showPanelLoader) {
+      return (
+        <div className="lg:flex lg:flex-col lg:h-full">
+          <div className="flex-shrink-0">
+            <StepTabSwitcher activeTab={activeTab} onTabChange={setActiveTab} />
+          </div>
+          <div className="lg:flex-1 lg:overflow-y-auto lg:min-h-0 mt-4 flex items-center justify-center">
+            <StepLoader step={4} />
+          </div>
+        </div>
+      );
+    }
     return (
       <Step4Controls
         {...shared}
         currentStep={currentStep}
         selectedLayout={step4.selectedLayout}
         setSelectedLayout={step4.setSelectedLayout}
-        inspirationImages={step3.inspirationImages}
+        inspirationImages={
+          step3.inspirationImageUrl ? [step3.inspirationImageUrl] : []
+        }
       />
     );
   }

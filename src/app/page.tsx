@@ -12,7 +12,6 @@ import { ProjectDetail } from "@/components/ProjectDetail";
 import { Projects } from "@/components/Projects";
 import { Settings } from "@/components/Settings";
 import { Sidebar } from "@/components/Sidebar";
-import { SpaceFormDialog } from "@/components/SpaceFormDialog";
 import { Team } from "@/components/Team";
 import { AIGenerationFlowProvider } from "@/contexts/AIGenerationFlowContext";
 import type { SpaceWithRelations } from "@/types/space";
@@ -35,7 +34,6 @@ export default function HomePage() {
   const [selectedProject, setSelectedProject] = useState<string>("");
   const [aiFlowSpaceName, setAiFlowSpaceName] = useState<string>("");
   const [isAIFlowFullView, setIsAIFlowFullView] = useState(false);
-  const [isCreateSpaceDialogOpen, setIsCreateSpaceDialogOpen] = useState(false);
 
   const toggleSidebar = () => {
     setIsSidebarExpanded(!isSidebarExpanded);
@@ -68,15 +66,6 @@ export default function HomePage() {
 
   const handleAIFlowFullViewChange = (isFullView: boolean) => {
     setIsAIFlowFullView(isFullView);
-  };
-
-  const handleCreateSpace = () => {
-    setIsCreateSpaceDialogOpen(true);
-  };
-
-  const handleCreateSpaceFromDialog = (space: SpaceWithRelations) => {
-    setIsCreateSpaceDialogOpen(false);
-    handleStartAIFlow(space.name);
   };
 
   const handleEditSpace = (
@@ -130,10 +119,7 @@ export default function HomePage() {
       >
         {currentView === "home" ? (
           <>
-            <Hero
-              onStartAIFlow={() => handleStartAIFlow()}
-              onCreateSpace={handleCreateSpace}
-            />
+            <Hero onStartAIFlow={() => handleStartAIFlow()} />
             <Gallery
               onEditSpace={handleEditSpace}
               onViewSpace={handleViewSpace}
@@ -166,13 +152,6 @@ export default function HomePage() {
 
         {currentView === "home" && <Filters />}
       </MainLayout>
-
-      <SpaceFormDialog
-        isOpen={isCreateSpaceDialogOpen}
-        onClose={() => setIsCreateSpaceDialogOpen(false)}
-        mode="create"
-        onCreate={handleCreateSpaceFromDialog}
-      />
     </AIGenerationFlowProvider>
   );
 }

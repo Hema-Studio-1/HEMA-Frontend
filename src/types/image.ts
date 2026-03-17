@@ -16,3 +16,23 @@ export interface Image {
   height?: number;
   createdAt: string;
 }
+
+export interface CreateImageRequest {
+  projectId?: string;
+  spaceId?: string;
+  type: ImageType;
+  storagePath: string;
+  width?: number;
+  height?: number;
+}
+
+export interface CreateImageResponse {
+  id: string;
+  projectId?: string | null;
+  spaceId?: string | null;
+  type: ImageType;
+  storagePath: string;
+  width?: number | null;
+  height?: number | null;
+  createdAt: string;
+}

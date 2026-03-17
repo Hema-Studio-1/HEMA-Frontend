@@ -60,6 +60,8 @@ export interface Step1Data {
   budget: number | null;
   uploadedImage: string | null;
   uploadedImageUrl: string | null;
+  imageId: string | null;
+  imageDimensions: { width: number; height: number } | null;
 }
 
 /** Step 2: Make Space - furniture to remove */
@@ -76,10 +78,18 @@ export interface DetectedFurnitureItem {
   } | null;
 }
 
+/** Group of detected items by category (as returned from API) */
+export interface DetectedFurnitureGroup {
+  category: string;
+  items: DetectedFurnitureItem[];
+}
+
 export interface Step2Data {
   detectedFurniture: DetectedFurnitureItem[];
+  detectedFurnitureGrouped: DetectedFurnitureGroup[];
   selectedFurniture: string[];
   cleanedImageUrl: string | null;
+  intermediateImageId: string | null;
 }
 
 /** Step 3: Add Inspiration - style, mood, materials, inspiration images */
@@ -88,11 +98,14 @@ export interface Step3Data {
   mood: string;
   materials: string;
   inspirationImages: string[];
+  inspirationImageId: string | null;
+  inspirationImageUrl: string | null;
 }
 
 /** Step 4: Room Layout */
 export interface Step4Data {
   selectedLayout: number | null;
+  finalImageUrl: string | null;
 }
 
 /** Step 5: Amend Design */

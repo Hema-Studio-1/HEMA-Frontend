@@ -1,5 +1,6 @@
 "use client";
 
+import { getSignedUrlForPath } from "@/actions/upload-files";
 import { Button } from "@/components/ui/button";
 import {
   STEPS,
@@ -8,13 +9,25 @@ import {
 import { StepCanvasPanel } from "@/containers/ai-generation-flow/StepCanvasPanel";
 import { StepControlsPanel } from "@/containers/ai-generation-flow/StepControlsPanel";
 import { StepIndicator } from "@/containers/ai-generation-flow/StepIndicator";
+import type {
+  DetectedFurnitureGroup,
+  DetectedFurnitureItem,
+} from "@/containers/ai-generation-flow/types";
 import { useAIGenerationFlowContext } from "@/contexts/AIGenerationFlowContext";
-// API calls commented out — using fake promises for flow to run without backend
-// import {
-//   detectFurniture,
-//   removeFurniture,
-//   updateSpaceDetails,
-// } from "@/services/api/spaces";
+import { createSpaceApiResp } from "@/mock/create-space-api";
+import { detectApiResp } from "@/mock/mock-detect-api-resp";
+import {
+  createSpace,
+  detectFurniture,
+  emptyCompleteRoom,
+  fillRoomFromInspirationFurniture,
+  removeFurniture,
+} from "@/services/api/spaces";
+import type {
+  DetectFurnitureResponse,
+  DetectFurnitureResult,
+  SpaceWithRelations,
+} from "@/types/space";
 import {
   ArrowLeft,
   Maximize2,
@@ -25,6 +38,7 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { CommentsPanel } from "./CommentsPanel";
+import { ImagePhaseGrid } from "./ImagePhaseGrid";
 
 interface AIGenerationFlowProps {
   onBack: () => void;
@@ -41,8 +55,15 @@ export function AIGenerationFlow({
   const {
     currentStep,
     setCurrentStep,
+    maxStepReached,
     step1,
     step2,
+    step3,
+    step4,
+    stepLoadingFor,
+    stepErrorMessage,
+    setStepLoadingFor,
+    setStepErrorMessage,
     isFullView,
     setIsFullView,
     isCommentsPanelOpen,
@@ -76,61 +97,229 @@ export function AIGenerationFlow({
     return mapping[roomType] || roomType;
   };
 
+  function mapDetectResponseToGroupedItems(
+    res: DetectFurnitureResponse,
+    baseImageUrl: string,
+    imgWidth: number,
+    imgHeight: number,
+  ): DetectedFurnitureGroup[] {
+    const groups: DetectedFurnitureGroup[] = [];
+    let globalIndex = 0;
+
+    const raw = res as Record<string, Array<{ label: string; boundingBox?: { x: number; y: number; width: number; height: number } }>>;
+    let data: DetectFurnitureResult | undefined;
+    let segmentedObjects: unknown[] | undefined;
+
+    if (Array.isArray(res)) {
+      data = res[0] as DetectFurnitureResult;
+      segmentedObjects = data?.segmentedObjects;
+    } else if (raw?.parsed != null) {
+      const parsedVal = raw.parsed;
+      const resolved =
+        typeof parsedVal === "string"
+          ? (() => {
+              try {
+                return JSON.parse(parsedVal) as DetectFurnitureResult;
+              } catch {
+                return undefined;
+              }
+            })()
+          : Array.isArray(parsedVal) && parsedVal.length > 0
+            ? (parsedVal[0] as DetectFurnitureResult)
+            : (parsedVal as DetectFurnitureResult);
+      data = resolved;
+      segmentedObjects = Array.isArray(raw.segmentedObjects)
+        ? raw.segmentedObjects
+        : data?.segmentedObjects;
+    } else if (raw?.data != null && typeof raw.data === "object") {
+      const inner = raw.data as unknown as Record<string, unknown>;
+      if (inner.parsed != null && typeof inner.parsed === "object") {
+        const parsedVal = inner.parsed;
+        data = Array.isArray(parsedVal) && parsedVal.length > 0
+          ? (parsedVal[0] as unknown as DetectFurnitureResult)
+          : (parsedVal as unknown as DetectFurnitureResult);
+        segmentedObjects = Array.isArray(inner.segmentedObjects)
+          ? inner.segmentedObjects
+          : Array.isArray(raw.segmentedObjects)
+            ? raw.segmentedObjects
+            : data?.segmentedObjects;
+      } else {
+        data = inner as DetectFurnitureResult;
+        segmentedObjects = data?.segmentedObjects;
+      }
+    } else {
+      data = res as DetectFurnitureResult;
+      segmentedObjects = data?.segmentedObjects;
+    }
+
+    const detections =
+      data?.detections ??
+      (Array.isArray((raw as { detections?: unknown }).detections)
+        ? (raw as { detections: unknown[] }).detections
+        : undefined);
+
+    if (detections && Array.isArray(detections)) {
+      for (const categoryObj of detections) {
+        const obj = categoryObj as Record<string, unknown>;
+        for (const [categoryName, itemsArr] of Object.entries(obj)) {
+          if (!Array.isArray(itemsArr)) continue;
+          const items: DetectedFurnitureItem[] = [];
+          for (const item of itemsArr) {
+            const label = item?.label ?? "item";
+            const bbox = item?.boundingBox;
+            const id = `${label}-${globalIndex}`;
+            globalIndex += 1;
+            const isNormalized =
+              bbox &&
+              bbox.x <= 1 &&
+              bbox.y <= 1 &&
+              bbox.width <= 1 &&
+              bbox.height <= 1 &&
+              bbox.x >= 0 &&
+              bbox.y >= 0;
+            if (bbox && isNormalized && imgWidth && imgHeight) {
+              items.push({
+                id,
+                label,
+                maskUrl: "",
+                objectUrl: baseImageUrl,
+                boundingBox: {
+                  x: bbox.x * imgWidth,
+                  y: bbox.y * imgHeight,
+                  width: bbox.width * imgWidth,
+                  height: bbox.height * imgHeight,
+                },
+              });
+            } else if (bbox) {
+              items.push({
+                id,
+                label,
+                maskUrl: "",
+                objectUrl: baseImageUrl,
+                boundingBox: {
+                  x: bbox.x,
+                  y: bbox.y,
+                  width: bbox.width,
+                  height: bbox.height,
+                },
+              });
+            } else {
+              items.push({
+                id,
+                label,
+                maskUrl: "",
+                objectUrl: baseImageUrl,
+                boundingBox: null,
+              });
+            }
+          }
+          if (items.length > 0) {
+            groups.push({
+              category: categoryName,
+              items,
+            });
+          }
+        }
+      }
+    }
+
+    if (segmentedObjects && Array.isArray(segmentedObjects)) {
+      const items: DetectedFurnitureItem[] = [];
+      for (const obj of segmentedObjects) {
+        const seg = obj as { label: string; boundingBox?: { x: number; y: number; width: number; height: number } | null };
+        const id = `${seg.label}-${globalIndex}`;
+        globalIndex += 1;
+        items.push({
+          id,
+          label: seg.label,
+          maskUrl: "",
+          objectUrl: baseImageUrl,
+          boundingBox: seg.boundingBox ?? null,
+        });
+      }
+      if (items.length > 0) {
+        groups.push({ category: "other", items });
+      }
+    }
+
+    return groups;
+  }
+
   const handleStep1Submit = async () => {
     const baseImage = step1.uploadedImageUrl ?? step1.uploadedImage;
-    if (!baseImage) {
+    const imageId = step1.imageId;
+    if (!baseImage || !imageId) {
       toast.error("Please upload an image first.");
       return;
     }
 
     if (isSubmitting) return;
     setIsSubmitting(true);
+    setStepErrorMessage(null);
+
+    // Advance to step 2 first, then call APIs (loader shows in step 2)
+    setCurrentStep(2);
+    setStepLoadingFor(2);
 
     try {
-      // Fake API – comment out real calls when ready
-      // const updateResult = await updateSpaceDetails(step1.space!.id, updatePayload);
-      // const detectResult = await detectFurniture(step1.space!.id, { imageId });
-      await new Promise((r) => setTimeout(r, 600));
+      const roomType =
+        normalizeRoomType(step1.roomTypes[0] ?? step1.roomType) || "living_room";
+      const createPayload = {
+        name: step1.spaceName.trim() || "New Space",
+        description: "",
+        type: roomType,
+        status: "DRAFT" as const,
+        imageId,
+        widthM: step1.dimensions.width ?? undefined,
+        depthM: step1.dimensions.depth ?? undefined,
+        heightM: step1.dimensions.height ?? undefined,
+        budget: step1.budget ?? undefined,
+      };
 
-      // Mock detected items with bounding boxes for testing
-      // In production, uncomment above and use:
-      // const detectedItems = detectResult.data.output.detections.map(
-      //   (detection, index) => ({
-      //     id: `${detection.detected}-${index}`,
-      //     label: detection.detected,
-      //     maskUrl: detection.maskUrl,
-      //     objectUrl: detection.objectUrl,
-      //     boundingBox: detection.boundingBox ?? null, // Use boundingBox if available
-      //   }),
-      // );
-      const mockDetectedItems = [
-        {
-          id: "sofa-0",
-          label: "Grey sofa",
-          maskUrl: "",
-          objectUrl: baseImage,
-          boundingBox: { x: 100, y: 200, width: 400, height: 300 },
-        },
-        {
-          id: "table-1",
-          label: "Coffee table",
-          maskUrl: "",
-          objectUrl: baseImage,
-          boundingBox: { x: 300, y: 450, width: 200, height: 150 },
-        },
-        {
-          id: "chair-2",
-          label: "Armchair",
-          maskUrl: "",
-          objectUrl: baseImage,
-          boundingBox: { x: 600, y: 250, width: 180, height: 200 },
-        },
-      ];
-      step2.setDetectedFurniture(mockDetectedItems);
-      step1.setUploadedImageUrl(baseImage);
-      setCurrentStep(2);
+      // comment out the api call and use promise with resolved after 3 sec, with createSpaceApiResp as the result
+      // const createResult = await Promise.resolve(createSpaceApiResp);
+      const createResult = await createSpace(createPayload);
+      if (createResult.error || !createResult.data) {
+        setStepLoadingFor(null);
+        setStepErrorMessage(createResult.error ?? "Failed to create space");
+        return;
+      }
+
+      const space = createResult.data.space;
+      step1.setSpace(space);
+
+      // comment out the api call and use promise with resolved after 3 sec, with detectApiResp as the result
+      // const detectResult = await Promise.resolve(detectApiResp);
+      const detectResult = await detectFurniture(space.id, { imageId });
+      if (detectResult.error) {
+        setStepLoadingFor(null);
+        setStepErrorMessage(
+          detectResult.error ?? "Failed to detect furniture",
+        );
+        return;
+      }
+      
+
+      const imgDims = step1.imageDimensions;
+      const imgWidth = imgDims?.width ?? 1920;
+      const imgHeight = imgDims?.height ?? 1080;
+
+      const groupedItems = mapDetectResponseToGroupedItems(
+        detectResult.data ?? {},
+        baseImage,
+        imgWidth,
+        imgHeight,
+      );
+      console.log('groupedItems', groupedItems);
+      const flatItems = groupedItems.flatMap((g) => g.items);
+      console.log('flatItems', flatItems);
+      step2.setDetectedFurnitureGrouped(groupedItems);
+      step2.setDetectedFurniture(flatItems);
+      step2.setSelectedFurniture([]);
+      setStepLoadingFor(null);
     } catch (error) {
-      toast.error(
+      setStepLoadingFor(null);
+      setStepErrorMessage(
         error instanceof Error ? error.message : "Failed to process step 1",
       );
     } finally {
@@ -139,25 +328,140 @@ export function AIGenerationFlow({
   };
 
   const handleStep2Submit = async () => {
-    const baseImage = step1.uploadedImageUrl ?? step1.uploadedImage;
-    if (!baseImage) {
-      toast.error("Image not found. Please upload an image first.");
+    const space = step1.space;
+    const imageId = step1.imageId;
+    if (!space || !imageId) {
+      toast.error("Space or image not found. Please complete step 1 first.");
+      return;
+    }
+
+    const allSelected =
+      step2.detectedFurniture.length === 0 ||
+      step2.selectedFurniture.length === step2.detectedFurniture.length;
+
+    if (!allSelected) {
+      const selectedItems = step2.detectedFurniture.filter((item) =>
+        step2.selectedFurniture.includes(item.id),
+      );
+      if (selectedItems.length === 0) {
+        toast.error("Please select at least one element to remove.");
+        return;
+      }
+    }
+
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    setStepErrorMessage(null);
+
+    // Advance to step 3 first, then call API (loader shows in step 3)
+    setCurrentStep(3);
+    setStepLoadingFor(3);
+
+    try {
+      let result: { path?: string; image?: { id?: string; storagePath?: string } } | null = null;
+
+      if (allSelected) {
+        const res = await emptyCompleteRoom(space.id, { imageId });
+        if (res.error) {
+          setStepLoadingFor(null);
+          setStepErrorMessage(res.error ?? "Failed to empty room");
+          return;
+        }
+        result = res.data;
+      } else {
+        const selectedItems = step2.detectedFurniture.filter((item) =>
+          step2.selectedFurniture.includes(item.id),
+        );
+        const items = selectedItems.map((item) => ({
+          label: item.label,
+          boudingBox: item.boundingBox
+            ? {
+                x: item.boundingBox.x,
+                y: item.boundingBox.y,
+                width: item.boundingBox.width,
+                height: item.boundingBox.height,
+              }
+            : { x: 0, y: 0, width: 0, height: 0 },
+        }));
+        const res = await removeFurniture(space.id, { imageId, items });
+        if (res.error) {
+          setStepLoadingFor(null);
+          setStepErrorMessage(res.error ?? "Failed to remove furniture");
+          return;
+        }
+        result = res.data;
+      }
+
+      const path = result?.path ?? result?.image?.storagePath;
+      const cleanedUrl = path
+        ? await getSignedUrlForPath(path)
+        : step1.uploadedImageUrl;
+      if (cleanedUrl) {
+        step2.setCleanedImageUrl(cleanedUrl);
+      }
+      const intermediateId = result?.image?.id;
+      if (intermediateId) {
+        step2.setIntermediateImageId(intermediateId);
+      }
+      setStepLoadingFor(null);
+    } catch (error) {
+      setStepLoadingFor(null);
+      setStepErrorMessage(
+        error instanceof Error ? error.message : "Failed to process step 2",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleStep3Submit = async () => {
+    const space = step1.space;
+    const intermediateImageId = step2.intermediateImageId;
+    const inspirationImageId = step3.inspirationImageId;
+    if (!space || !intermediateImageId) {
+      toast.error("Empty room image not found. Please complete step 2 first.");
+      return;
+    }
+    if (!inspirationImageId) {
+      toast.error("Please upload an inspiration image first.");
       return;
     }
 
     if (isSubmitting) return;
     setIsSubmitting(true);
+    setStepErrorMessage(null);
+
+    // Advance to step 4 first, then call API (loader shows in step 4)
+    setCurrentStep(4);
+    setStepLoadingFor(4);
 
     try {
-      // Fake API – comment out real call when ready
-      // const removeResult = await removeFurniture(step1.space!.id, { imageId, maskUrls });
-      await new Promise((r) => setTimeout(r, 600));
+      const res = await fillRoomFromInspirationFurniture(space.id, {
+        imageId: intermediateImageId,
+        inpirationFurnitureImageId: inspirationImageId,
+        aiContext: {
+          style_keywords: step3.styleKeywords,
+          mood: step3.mood,
+          materials: step3.materials,
+        },
+      });
 
-      step2.setCleanedImageUrl(baseImage);
-      setCurrentStep(3);
+      if (res.error) {
+        setStepLoadingFor(null);
+        setStepErrorMessage(res.error ?? "Failed to generate design");
+        return;
+      }
+
+      const path = res.data?.path ?? res.data?.image?.storagePath;
+      const finalUrl = path ? await getSignedUrlForPath(path) : null;
+      if (finalUrl) {
+        step4.setFinalImageUrl(finalUrl);
+      }
+      setStepLoadingFor(null);
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to process step 2",
+      setStepLoadingFor(null);
+      setStepErrorMessage(
+        error instanceof Error ? error.message : "Failed to generate design",
       );
     } finally {
       setIsSubmitting(false);
@@ -173,6 +477,10 @@ export function AIGenerationFlow({
       void handleStep2Submit();
       return;
     }
+    if (currentStep === 3) {
+      void handleStep3Submit();
+      return;
+    }
     if (currentStep < 6) {
       setCurrentStep((currentStep + 1) as 1 | 2 | 3 | 4 | 5 | 6);
     }
@@ -180,7 +488,60 @@ export function AIGenerationFlow({
 
   const handlePreviousStep = () => {
     if (currentStep > 1) {
+      setStepErrorMessage(null);
       setCurrentStep((currentStep - 1) as 1 | 2 | 3 | 4 | 5 | 6);
+    }
+  };
+
+  const handleRetryStep2 = async () => {
+    const baseImage = step1.uploadedImageUrl ?? step1.uploadedImage;
+    const imageId = step1.imageId;
+    const space = step1.space;
+    if (!baseImage || !imageId) {
+      toast.error("Please upload an image first.");
+      return;
+    }
+    if (isSubmitting) return;
+
+    setStepErrorMessage(null);
+    setIsSubmitting(true);
+    setStepLoadingFor(2);
+
+    try {
+      if (space) {
+        const detectResult = await detectFurniture(space.id, { imageId });
+        if (detectResult.error) {
+          setStepLoadingFor(null);
+          setStepErrorMessage(
+            detectResult.error ?? "Failed to detect furniture",
+          );
+          return;
+        }
+        const imgDims = step1.imageDimensions;
+        const imgWidth = imgDims?.width ?? 1920;
+        const imgHeight = imgDims?.height ?? 1080;
+        const groupedItems = mapDetectResponseToGroupedItems(
+          detectResult.data ?? {},
+          baseImage,
+          imgWidth,
+          imgHeight,
+        );
+        const flatItems = groupedItems.flatMap((g) => g.items);
+        step2.setDetectedFurnitureGrouped(groupedItems);
+        step2.setDetectedFurniture(flatItems);
+        step2.setSelectedFurniture([]);
+      } else {
+        void handleStep1Submit();
+        return;
+      }
+      setStepLoadingFor(null);
+    } catch (error) {
+      setStepLoadingFor(null);
+      setStepErrorMessage(
+        error instanceof Error ? error.message : "Failed to detect furniture",
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -302,13 +663,16 @@ export function AIGenerationFlow({
             steps={STEPS}
             currentStep={currentStep}
             setCurrentStep={setCurrentStep}
+            maxStepReached={maxStepReached}
           />
 
           <div className="grid gap-x-8 gap-y-4 xl:pr-24 lg:grid-cols-[1fr_minmax(290px,300px)] xl:grid-cols-[1fr_minmax(320px,380px)]">
             <div className="flex flex-col gap-1.5 min-h-0">
               <div className="min-h-0">
-                <StepCanvasPanel />
+                <StepCanvasPanel onRetryStep2={handleRetryStep2} />
               </div>
+
+              <ImagePhaseGrid />
 
               <div className="hidden lg:flex items-center justify-between">
                 <div className="flex items-center gap-8">
@@ -329,10 +693,16 @@ export function AIGenerationFlow({
                   disabled={
                     (currentStep === 1 &&
                       !(step1.uploadedImageUrl ?? step1.uploadedImage)) ||
-                    isSubmitting
+                (currentStep === 2 &&
+                  step2.detectedFurniture.length > 0 &&
+                  step2.selectedFurniture.length === 0) ||
+                (currentStep === 3 && !step3.inspirationImageId) ||
+                isSubmitting ||
+                stepLoadingFor !== null ||
+                stepErrorMessage !== null
                   }
                 >
-                  {isSubmitting
+                  {isSubmitting || stepLoadingFor !== null
                     ? "Processing..."
                     : currentStep === 6
                       ? "Complete"
@@ -382,10 +752,16 @@ export function AIGenerationFlow({
               disabled={
                 (currentStep === 1 &&
                   !(step1.uploadedImageUrl ?? step1.uploadedImage)) ||
-                isSubmitting
+                (currentStep === 2 &&
+                  step2.detectedFurniture.length > 0 &&
+                  step2.selectedFurniture.length === 0) ||
+                (currentStep === 3 && !step3.inspirationImageId) ||
+                isSubmitting ||
+                stepLoadingFor !== null ||
+                stepErrorMessage !== null
               }
             >
-              {isSubmitting
+              {isSubmitting || stepLoadingFor !== null
                 ? "Processing..."
                 : currentStep === 6
                   ? "Complete"

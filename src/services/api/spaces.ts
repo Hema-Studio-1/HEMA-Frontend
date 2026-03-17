@@ -1,8 +1,14 @@
 import type {
+    CreateFullSpaceRequest,
+    CreateFullSpaceResponse,
     CreateSpaceWithImageRequest,
     CreateSpaceWithImageResponse,
     DetectFurnitureRequest,
     DetectFurnitureResponse,
+    EmptyCompleteRoomRequest,
+    EmptyCompleteRoomResponse,
+    FillRoomFromInspirationFurnitureRequest,
+    FillRoomFromInspirationFurnitureResponse,
     GetSpacesResponse,
     MeasureRoomRequest,
     MeasureRoomResponse,
@@ -34,11 +40,21 @@ export async function createSpaceWithImage(
 }
 
 export async function measureRoom(
-  spaceId: string,
   data: MeasureRoomRequest,
 ): Promise<FetchResponse<MeasureRoomResponse>> {
   return $axiosReq<MeasureRoomResponse>({
-    url: `spaces/${spaceId}/measure-room`,
+    url: "spaces/measure-room",
+    method: "POST",
+    data,
+    silent: true,
+  });
+}
+
+export async function createSpace(
+  data: CreateFullSpaceRequest,
+): Promise<FetchResponse<CreateFullSpaceResponse>> {
+  return $axiosReq<CreateFullSpaceResponse>({
+    url: "spaces/create-space",
     method: "POST",
     data,
     silent: true,
@@ -75,6 +91,30 @@ export async function removeFurniture(
 ): Promise<FetchResponse<RemoveFurnitureResponse>> {
   return $axiosReq<RemoveFurnitureResponse>({
     url: `spaces/${spaceId}/remove-furniture`,
+    method: "POST",
+    data,
+    silent: true,
+  });
+}
+
+export async function emptyCompleteRoom(
+  spaceId: string,
+  data: EmptyCompleteRoomRequest,
+): Promise<FetchResponse<EmptyCompleteRoomResponse>> {
+  return $axiosReq<EmptyCompleteRoomResponse>({
+    url: `spaces/${spaceId}/empty-complete-room`,
+    method: "POST",
+    data,
+    silent: true,
+  });
+}
+
+export async function fillRoomFromInspirationFurniture(
+  spaceId: string,
+  data: FillRoomFromInspirationFurnitureRequest,
+): Promise<FetchResponse<FillRoomFromInspirationFurnitureResponse>> {
+  return $axiosReq<FillRoomFromInspirationFurnitureResponse>({
+    url: `spaces/${spaceId}/fill-room-from-inpiration-furniture`,
     method: "POST",
     data,
     silent: true,

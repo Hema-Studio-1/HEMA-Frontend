@@ -62,7 +62,10 @@ export interface MeasureRoomRequest {
 }
 
 export interface MeasureRoomResponse {
-  space: SpaceWithRelations | null;
+  width?: number;
+  depth?: number;
+  height?: number;
+  length?: number;
 }
 
 export type GetSpacesResponse = SpaceWithRelations[];
@@ -83,7 +86,7 @@ export interface DetectFurnitureRequest {
 
 export interface DetectedObject {
   detected: string;
-  maskUrl: string;
+  maskUrl?: string;
   objectUrl?: string;
   boundingBox?: {
     x: number;
@@ -93,24 +96,109 @@ export interface DetectedObject {
   } | null;
 }
 
-export interface DetectFurnitureResponse {
+/** Shape of detections array: category objects e.g. { furniture: [...] }, { electronics: [...] } */
+export interface DetectFurnitureResult {
+  itemsDetected?: number;
+  detections?: Array<Record<string, Array<{ label: string; boundingBox?: { x: number; y: number; width: number; height: number } }>>>;
+  segmentedObjects?: Array<{
+    id: string;
+    imageId: string;
+    label: string;
+    maskImageId: string;
+    boundingBox?: { x: number; y: number; width: number; height: number } | null;
+    createdAt: string;
+  }>;
+  output?: {
+    detected_image?: string;
+    detections?: DetectedObject[];
+    final_mask?: string;
+  };
   delayTime?: number;
   executionTime?: number;
   id?: string;
-  output: {
-    detected_image?: string;
-    detections: DetectedObject[];
-    final_mask?: string;
-  };
   status?: string;
   workerId?: string;
 }
 
+/** API may return { parsed: { itemsDetected, detections }, segmentedObjects } or array or single object */
+export interface DetectFurnitureResponseWrapper {
+  parsed?: DetectFurnitureResult;
+  segmentedObjects?: Array<{
+    id?: string;
+    imageId?: string;
+    label: string;
+    maskImageId?: string;
+    boundingBox?: { x: number; y: number; width: number; height: number } | null;
+    createdAt?: string;
+  }>;
+}
+export type DetectFurnitureResponse =
+  | DetectFurnitureResult
+  | DetectFurnitureResult[]
+  | DetectFurnitureResponseWrapper;
+
+export interface BoundingBoxDto {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface ItemDto {
+  label: string;
+  boudingBox: BoundingBoxDto;
+}
+
 export interface RemoveFurnitureRequest {
   imageId: string;
-  maskUrls: string[];
+  items: ItemDto[];
 }
 
 export interface RemoveFurnitureResponse {
-  data: string;
+  path?: string;
+  image: Image;
+}
+
+export interface EmptyCompleteRoomRequest {
+  imageId: string;
+}
+
+export interface EmptyCompleteRoomResponse {
+  path?: string;
+  image: Image;
+}
+
+export interface AIContext {
+  style_keywords: string;
+  mood: string;
+  materials: string;
+}
+
+export interface FillRoomFromInspirationFurnitureRequest {
+  imageId: string;
+  inpirationFurnitureImageId: string;
+  aiContext: AIContext;
+}
+
+export interface FillRoomFromInspirationFurnitureResponse {
+  path?: string;
+  image: Image;
+}
+
+export interface CreateFullSpaceRequest {
+  projectId?: string;
+  imageId?: string;
+  name: string;
+  description?: string;
+  type: SpaceType | string;
+  status?: SpaceStatus | string;
+  widthM?: number;
+  depthM?: number;
+  heightM?: number;
+  budget?: number;
+}
+
+export interface CreateFullSpaceResponse {
+  space: SpaceWithRelations;
+  spacesCountForProject: number;
 }

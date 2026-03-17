@@ -6,10 +6,9 @@ import React from "react";
 
 interface HeroProps {
   onStartAIFlow?: () => void;
-  onCreateSpace?: () => void;
 }
 
-export function Hero({ onStartAIFlow, onCreateSpace }: HeroProps) {
+export function Hero({ onStartAIFlow }: HeroProps) {
   const { status } = useSession();
   const isSessionReady = status !== "loading";
   const isAuthenticated = status === "authenticated";

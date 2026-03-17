@@ -2,7 +2,7 @@
 
 import { uploadSingleFile } from "@/actions/upload-files";
 import { useAIGenerationFlowContext } from "@/contexts/AIGenerationFlowContext";
-import { extractSpaceDimensions } from "@/lib/dimensions";
+import { extractDimensionsFromMeasureRoom } from "@/lib/dimensions";
 import { createSpaceWithImage, measureRoom } from "@/services/api/spaces";
 import { ImageType } from "@/types/image";
 import type { SpaceWithRelations } from "@/types/space";
@@ -247,13 +247,12 @@ export function SpaceFormDialog({
 
       // Wait for room measurement before redirecting; continue flow even if this fails.
       if (imageId) {
-        const measureResult = await measureRoom(space.id, { imageId });
-        if (!measureResult.error && measureResult.data?.space) {
-          const measuredDimensions = extractSpaceDimensions(
-            measureResult.data.space,
+        const measureResult = await measureRoom({ imageId });
+        if (!measureResult.error && measureResult.data) {
+          const measuredDimensions = extractDimensionsFromMeasureRoom(
+            measureResult.data,
           );
           step1.setDimensions(measuredDimensions);
-          step1.setSpace(measureResult.data.space);
         }
       }
 

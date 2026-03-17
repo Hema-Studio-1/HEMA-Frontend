@@ -1,15 +1,16 @@
 import type {
-  ChatMessage,
-  DetectedFurnitureItem,
-  Dimensions,
-  FlowTab,
-  Step,
-  Step1Data,
-  Step2Data,
-  Step3Data,
-  Step4Data,
-  Step5Data,
-  Step6Data,
+    ChatMessage,
+    DetectedFurnitureGroup,
+    DetectedFurnitureItem,
+    Dimensions,
+    FlowTab,
+    Step,
+    Step1Data,
+    Step2Data,
+    Step3Data,
+    Step4Data,
+    Step5Data,
+    Step6Data,
 } from "@/containers/ai-generation-flow/types";
 import type { SpaceWithRelations } from "@/types/space";
 import type { Dispatch, SetStateAction } from "react";
@@ -23,12 +24,21 @@ export interface Step1Context extends Step1Data {
   setDimensions: Dispatch<SetStateAction<Dimensions>>;
   setBudget: Dispatch<SetStateAction<number | null>>;
   setUploadedImage: Dispatch<SetStateAction<string | null>>;
+  setImageId: Dispatch<SetStateAction<string | null>>;
+  setImageDimensions: Dispatch<SetStateAction<{
+    width: number;
+    height: number;
+  } | null>>;
 }
 
 export interface Step2Context extends Step2Data {
   setDetectedFurniture: Dispatch<SetStateAction<DetectedFurnitureItem[]>>;
+  setDetectedFurnitureGrouped: Dispatch<
+    SetStateAction<DetectedFurnitureGroup[]>
+  >;
   setSelectedFurniture: Dispatch<SetStateAction<string[]>>;
   setCleanedImageUrl: Dispatch<SetStateAction<string | null>>;
+  setIntermediateImageId: Dispatch<SetStateAction<string | null>>;
 }
 
 export interface Step3Context extends Step3Data {
@@ -36,10 +46,13 @@ export interface Step3Context extends Step3Data {
   setMood: Dispatch<SetStateAction<string>>;
   setMaterials: Dispatch<SetStateAction<string>>;
   setInspirationImages: Dispatch<SetStateAction<string[]>>;
+  setInspirationImageId: Dispatch<SetStateAction<string | null>>;
+  setInspirationImageUrl: Dispatch<SetStateAction<string | null>>;
 }
 
 export interface Step4Context extends Step4Data {
   setSelectedLayout: Dispatch<SetStateAction<number | null>>;
+  setFinalImageUrl: Dispatch<SetStateAction<string | null>>;
 }
 
 export interface Step5Context extends Step5Data {
@@ -64,6 +77,7 @@ export interface AIGenerationFlowContextValue {
   // Flow navigation
   currentStep: Step;
   setCurrentStep: Dispatch<SetStateAction<Step>>;
+  maxStepReached: Step;
 
   // Chat (shared across steps)
   chatMessages: ChatMessage[];
@@ -86,6 +100,12 @@ export interface AIGenerationFlowContextValue {
   setVersionToRestore: Dispatch<SetStateAction<number | null>>;
   currentVersion: number;
   setCurrentVersion: Dispatch<SetStateAction<number>>;
+
+  // Step loading & error (API calls after step change)
+  stepLoadingFor: 2 | 3 | 4 | null;
+  stepErrorMessage: string | null;
+  setStepLoadingFor: Dispatch<SetStateAction<2 | 3 | 4 | null>>;
+  setStepErrorMessage: Dispatch<SetStateAction<string | null>>;
 
   // Actions
   handleClearDraft: (initialSpaceName?: string) => void;

@@ -1,6 +1,6 @@
 import { useAIGenerationFlowContext } from "@/contexts/AIGenerationFlowContext";
 import { extractSpaceDimensions } from "@/lib/dimensions";
-import { getSpaces } from "@/services/api/spaces";
+// import { getSpaces } from "@/services/api/spaces";
 import { getSignedImgUrl } from "@/supabase/image-url-client";
 import type { SpaceType, SpaceWithRelations } from "@/types/space";
 import { Edit, Heart, Info, Trash2 } from "lucide-react";
@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import Masonry, { ResponsiveMasonry } from "react-responsive-masonry";
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
 import { SpaceInfoDialog } from "./SpaceInfoDialog";
+import { ImageType } from "@/types/image";
 
 interface GalleryImage {
   id: string;
@@ -34,6 +35,107 @@ interface GalleryProps {
 
 const DEFAULT_PREVIEW_URL =
   "https://images.unsplash.com/photo-1646936190308-6faef1ac893c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
+
+const MOCK_SPACES: SpaceWithRelations[] = [
+  {
+    id: "3ecb1768-c64f-4a21-8435-f4bb190e68ff",
+    projectId: null,
+    name: "Aiko Roach",
+    description: "Dolor iusto ea ipsum",
+    type: "living_room",
+    status: "DRAFT",
+    createdBy: "dbaf3c77-18c9-4dee-9696-2f68bbda7486",
+    createdAt: "2026-03-08T15:58:10.287Z",
+    updatedAt: "2026-03-08T15:58:10.287Z",
+    project: null,
+    views: [],
+    dimensions: [
+      {
+        id: "b8e015cd-d45f-40a3-8a91-a42a733f53b9",
+        spaceId: "3ecb1768-c64f-4a21-8435-f4bb190e68ff",
+        widthM: 12,
+        depthM: 14,
+        heightM: 9,
+        createdAt: "2026-03-08T15:58:14.541Z",
+      },
+    ],
+    preferences: [],
+    aiContexts: [],
+    owner: {},
+    images: [
+      {
+        id: "06bdf6e7-cde1-422c-a5d2-d548566558b7",
+        spaceId: "3ecb1768-c64f-4a21-8435-f4bb190e68ff",
+        type: ImageType.ORIGINAL,
+        storagePath: "hema/1772985484451_2fa0tc3w.jpg",
+        width: 1920,
+        height: 1280,
+        createdAt: "2026-03-08T15:58:10.291Z",
+      },
+    ],
+    memberships: [],
+  },
+  {
+    id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    projectId: "",
+    name: "Modern Living",
+    description: "Scandinavian-inspired living room",
+    type: "living_room",
+    status: "DRAFT",
+    createdBy: "dbaf3c77-18c9-4dee-9696-2f68bbda7486",
+    createdAt: "2026-03-10T10:00:00.000Z",
+    updatedAt: "2026-03-10T10:00:00.000Z",
+    project: null,
+    views: [],
+    dimensions: [],
+    preferences: [],
+    aiContexts: [],
+    owner: {},
+    images: [
+      {
+        id: "img-2",
+        projectId: "",
+        spaceId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        type: ImageType.ORIGINAL,
+        storagePath: "hema/sample-living.jpg",
+        width: 1920,
+        height: 1280,
+        createdAt: "2026-03-10T10:00:00.000Z",
+      },
+    ],
+    memberships: [],
+  },
+  {
+    id: "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+    projectId: "",
+    name: "Cozy Bedroom",
+    description: "Minimal bedroom design",
+    type: "bedroom",
+    status: "DRAFT",
+    createdBy: "dbaf3c77-18c9-4dee-9696-2f68bbda7486",
+    createdAt: "2026-03-11T12:00:00.000Z",
+    updatedAt: "2026-03-11T12:00:00.000Z",
+    project: null,
+    views: [],
+    dimensions: [],
+    preferences: [],
+    aiContexts: [],
+    owner: {},
+    images: [
+      {
+        id: "img-3",
+        projectId: "",
+        spaceId: "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+        type: ImageType.ORIGINAL,
+        storagePath: "hema/sample-bedroom.jpg",
+        width: 1920,
+        height: 1280,
+        createdAt: "2026-03-11T12:00:00.000Z",
+      },
+    ],
+    memberships: [],
+  },
+];
 
 const ROOM_TYPE_LABELS: Record<SpaceType, string> = {
   living_room: "Living Room",
@@ -153,14 +255,19 @@ export function Gallery({ onEditSpace, onViewSpace }: GalleryProps) {
     let isMounted = true;
 
     async function loadSpaces() {
-      const result = await getSpaces();
-      if (!isMounted) return;
-
+      // Map mock spaces instead of API call
       const nextImages = await Promise.all(
-        (result.data ?? []).map(mapSpaceToGalleryItem),
+        MOCK_SPACES.map(mapSpaceToGalleryItem),
       );
       if (!isMounted) return;
       setImages(nextImages.map((img) => ({ ...img, isLiked: false })));
+      // const result = await getSpaces();
+      // if (!isMounted) return;
+      // const nextImages = await Promise.all(
+      //   (result.data ?? []).map(mapSpaceToGalleryItem),
+      // );
+      // if (!isMounted) return;
+      // setImages(nextImages.map((img) => ({ ...img, isLiked: false })));
     }
 
     void loadSpaces();
@@ -192,8 +299,6 @@ export function Gallery({ onEditSpace, onViewSpace }: GalleryProps) {
     setSelectedSpace(image);
     setInfoDialogOpen(true);
   };
-
-  console.log("images", images);
 
   return (
     <div className="w-full mt-12 min-w-0">
@@ -247,18 +352,19 @@ export function Gallery({ onEditSpace, onViewSpace }: GalleryProps) {
                   onClick={(e) => {
                     e.stopPropagation();
                     if (onEditSpace) {
-                      if (image.sourceSpace) {
-                        step1.setSpace(image.sourceSpace);
-                        step1.setSpaceName(image.sourceSpace.name);
-                        step1.setRoomType(
-                          getRoomTypeValue(image.sourceSpace.type),
-                        );
-                        step1.setUploadedImageUrl(image.url);
-                        step1.setDimensions(
-                          extractSpaceDimensions(image.sourceSpace),
-                        );
-                        setCurrentStep(1);
-                      }
+                      // Edit button state update (commented out)
+                      // if (image.sourceSpace) {
+                      //   step1.setSpace(image.sourceSpace);
+                      //   step1.setSpaceName(image.sourceSpace.name);
+                      //   step1.setRoomType(
+                      //     getRoomTypeValue(image.sourceSpace.type),
+                      //   );
+                      //   step1.setUploadedImageUrl(image.url);
+                      //   step1.setDimensions(
+                      //     extractSpaceDimensions(image.sourceSpace),
+                      //   );
+                      //   setCurrentStep(1);
+                      // }
                       onEditSpace(image.id, image);
                     }
                   }}

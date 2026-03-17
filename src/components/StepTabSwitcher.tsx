@@ -18,7 +18,7 @@ export function StepTabSwitcher({ activeTab, onTabChange }: StepTabSwitcherProps
       >
         Controls
         {activeTab === 'controls' && (
-          <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-foreground" />
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-foreground" />
         )}
       </button>
       <button
@@ -33,7 +33,7 @@ export function StepTabSwitcher({ activeTab, onTabChange }: StepTabSwitcherProps
       >
         Chat
         {activeTab === 'chat' && (
-          <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-foreground" />
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-foreground" />
         )}
       </button>
     </div>

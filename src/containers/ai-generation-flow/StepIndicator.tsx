@@ -5,13 +5,17 @@ interface StepIndicatorProps {
   steps: StepMeta[];
   currentStep: Step;
   setCurrentStep: Dispatch<SetStateAction<Step>>;
+  maxStepReached: Step;
 }
 
 export function StepIndicator({
   steps,
   currentStep,
   setCurrentStep,
+  maxStepReached,
 }: StepIndicatorProps) {
+  const canNavigateTo = (stepNum: number) => stepNum <= maxStepReached;
+
   return (
     <>
       <div className="hidden xl:flex absolute right-0 top-1/2 -translate-y-1/2 flex-col gap-6 z-10">
@@ -19,8 +23,11 @@ export function StepIndicator({
           <button
             type="button"
             key={step.number}
-            onClick={() => setCurrentStep(step.number)}
-            className="flex flex-col items-center gap-1.5 group"
+            onClick={() => canNavigateTo(step.number) && setCurrentStep(step.number)}
+            disabled={!canNavigateTo(step.number)}
+            className={`flex flex-col items-center gap-1.5 group ${
+              !canNavigateTo(step.number) ? "cursor-not-allowed opacity-50" : ""
+            }`}
           >
             <div
               className={`w-6 h-6 flex items-center justify-center rounded-full transition-colors duration-300 ${
@@ -63,8 +70,11 @@ export function StepIndicator({
           <button
             type="button"
             key={step.number}
-            onClick={() => setCurrentStep(step.number)}
-            className="flex items-center gap-2 flex-shrink-0 group"
+            onClick={() => canNavigateTo(step.number) && setCurrentStep(step.number)}
+            disabled={!canNavigateTo(step.number)}
+            className={`flex items-center gap-2 flex-shrink-0 group ${
+              !canNavigateTo(step.number) ? "cursor-not-allowed opacity-50" : ""
+            }`}
           >
             <div
               className={`w-6 h-6 flex items-center justify-center rounded-full transition-colors duration-300 ${
