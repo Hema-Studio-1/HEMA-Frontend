@@ -14,19 +14,17 @@ import type {
   DetectedFurnitureItem,
 } from "@/containers/ai-generation-flow/types";
 import { useAIGenerationFlowContext } from "@/contexts/AIGenerationFlowContext";
-import { createSpaceApiResp } from "@/mock/create-space-api";
-import { detectApiResp } from "@/mock/mock-detect-api-resp";
 import {
   createSpace,
   detectFurniture,
   emptyCompleteRoom,
   fillRoomFromInspirationFurniture,
+  fillRoomFromSurprise,
   removeFurniture,
 } from "@/services/api/spaces";
 import type {
   DetectFurnitureResponse,
   DetectFurnitureResult,
-  SpaceWithRelations,
 } from "@/types/space";
 import {
   ArrowLeft,
@@ -62,6 +60,7 @@ export function AIGenerationFlow({
     step4,
     stepLoadingFor,
     stepErrorMessage,
+    step4FloorPlanLoading,
     setStepLoadingFor,
     setStepErrorMessage,
     isFullView,
@@ -454,14 +453,72 @@ export function AIGenerationFlow({
 
       const path = res.data?.path ?? res.data?.image?.storagePath;
       const finalUrl = path ? await getSignedUrlForPath(path) : null;
+      const generatedId = res.data?.image?.id;
       if (finalUrl) {
         step4.setFinalImageUrl(finalUrl);
+      }
+      if (generatedId) {
+        step3.setGeneratedImageId(generatedId);
+        step3.setGeneratedImageUrl(finalUrl ?? null);
       }
       setStepLoadingFor(null);
     } catch (error) {
       setStepLoadingFor(null);
       setStepErrorMessage(
         error instanceof Error ? error.message : "Failed to generate design",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleStep3Surprise = async () => {
+    const space = step1.space;
+    const intermediateImageId = step2.intermediateImageId;
+    if (!space || !intermediateImageId) {
+      toast.error("Empty room image not found. Please complete step 2 first.");
+      return;
+    }
+
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    setStepErrorMessage(null);
+
+    setCurrentStep(4);
+    setStepLoadingFor(4);
+
+    try {
+      const res = await fillRoomFromSurprise(space.id, {
+        imageId: intermediateImageId,
+        aiContext: {
+          style_keywords: step3.styleKeywords,
+          mood: step3.mood,
+          materials: step3.materials,
+        },
+      });
+
+      if (res.error) {
+        setStepLoadingFor(null);
+        setStepErrorMessage(res.error ?? "Failed to generate surprise design");
+        return;
+      }
+
+      const path = res.data?.path ?? res.data?.image?.storagePath;
+      const finalUrl = path ? await getSignedUrlForPath(path) : null;
+      const generatedId = res.data?.image?.id;
+      if (finalUrl) {
+        step4.setFinalImageUrl(finalUrl);
+        step4.setSurpriseImageUrl(finalUrl);
+      }
+      if (generatedId) {
+        step3.setGeneratedImageId(generatedId);
+        step3.setGeneratedImageUrl(finalUrl ?? null);
+      }
+      setStepLoadingFor(null);
+    } catch (error) {
+      setStepLoadingFor(null);
+      setStepErrorMessage(
+        error instanceof Error ? error.message : "Failed to generate surprise design",
       );
     } finally {
       setIsSubmitting(false);
@@ -682,34 +739,65 @@ export function AIGenerationFlow({
                   <Button
                     onClick={handlePreviousStep}
                     variant="link"
-                    disabled={currentStep === 1}
+                    disabled={
+                      currentStep === 1 || step4FloorPlanLoading
+                    }
                   >
                     Go back
                   </Button>
                 </div>
 
-                <Button
-                  onClick={handleNextStep}
-                  disabled={
-                    (currentStep === 1 &&
-                      !(step1.uploadedImageUrl ?? step1.uploadedImage)) ||
-                (currentStep === 2 &&
-                  step2.detectedFurniture.length > 0 &&
-                  step2.selectedFurniture.length === 0) ||
-                (currentStep === 3 && !step3.inspirationImageId) ||
-                isSubmitting ||
-                stepLoadingFor !== null ||
-                stepErrorMessage !== null
-                  }
-                >
-                  {isSubmitting || stepLoadingFor !== null
-                    ? "Processing..."
-                    : currentStep === 6
-                      ? "Complete"
-                      : currentStep === 3
-                        ? "Generate design"
+                {currentStep === 3 ? (
+                  <div className="flex gap-3">
+                    <Button
+                      onClick={() => void handleStep3Surprise()}
+                      disabled={
+                        !step2.intermediateImageId ||
+                        isSubmitting ||
+                        stepLoadingFor !== null ||
+                        stepErrorMessage !== null
+                      }
+                    >
+                      {isSubmitting || stepLoadingFor !== null
+                        ? "Processing..."
+                        : "Surprise"}
+                    </Button>
+                    <Button
+                      onClick={handleNextStep}
+                      disabled={
+                        !step3.inspirationImageId ||
+                        isSubmitting ||
+                        stepLoadingFor !== null ||
+                        stepErrorMessage !== null
+                      }
+                    >
+                      {isSubmitting || stepLoadingFor !== null
+                        ? "Processing..."
+                        : "Generate Design"}
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    onClick={handleNextStep}
+                    disabled={
+                      (currentStep === 1 &&
+                        !(step1.uploadedImageUrl ?? step1.uploadedImage)) ||
+                      (currentStep === 2 &&
+                        step2.detectedFurniture.length > 0 &&
+                        step2.selectedFurniture.length === 0) ||
+                      isSubmitting ||
+                      stepLoadingFor !== null ||
+                      step4FloorPlanLoading ||
+                      stepErrorMessage !== null
+                    }
+                  >
+                    {isSubmitting || stepLoadingFor !== null
+                      ? "Processing..."
+                      : currentStep === 6
+                        ? "Complete"
                         : "Next step"}
-                </Button>
+                  </Button>
+                )}
               </div>
             </div>
 
@@ -736,7 +824,9 @@ export function AIGenerationFlow({
               <button
                 type="button"
                 onClick={handlePreviousStep}
-                disabled={currentStep === 1}
+                disabled={
+                  currentStep === 1 || step4FloorPlanLoading
+                }
                 className="text-[13px] text-textSecondary hover:text-foreground transition-colors duration-300 disabled:opacity-30 disabled:cursor-not-allowed"
                 style={{
                   fontFamily: "'Inter', sans-serif",
@@ -747,28 +837,57 @@ export function AIGenerationFlow({
                 Go back
               </button>
             </div>
-            <Button
-              onClick={handleNextStep}
-              disabled={
-                (currentStep === 1 &&
-                  !(step1.uploadedImageUrl ?? step1.uploadedImage)) ||
-                (currentStep === 2 &&
-                  step2.detectedFurniture.length > 0 &&
-                  step2.selectedFurniture.length === 0) ||
-                (currentStep === 3 && !step3.inspirationImageId) ||
-                isSubmitting ||
-                stepLoadingFor !== null ||
-                stepErrorMessage !== null
-              }
-            >
-              {isSubmitting || stepLoadingFor !== null
-                ? "Processing..."
-                : currentStep === 6
-                  ? "Complete"
-                  : currentStep === 3
-                    ? "Generate design"
+            {currentStep === 3 ? (
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => void handleStep3Surprise()}
+                  disabled={
+                    !step2.intermediateImageId ||
+                    isSubmitting ||
+                    stepLoadingFor !== null ||
+                    stepErrorMessage !== null
+                  }
+                >
+                  {isSubmitting || stepLoadingFor !== null
+                    ? "Processing..."
+                    : "Surprise"}
+                </Button>
+                <Button
+                  onClick={handleNextStep}
+                  disabled={
+                    !step3.inspirationImageId ||
+                    isSubmitting ||
+                    stepLoadingFor !== null ||
+                    stepErrorMessage !== null
+                  }
+                >
+                  {isSubmitting || stepLoadingFor !== null
+                    ? "Processing..."
+                    : "Generate Design"}
+                </Button>
+              </div>
+            ) : (
+              <Button
+                onClick={handleNextStep}
+                disabled={
+                  (currentStep === 1 &&
+                    !(step1.uploadedImageUrl ?? step1.uploadedImage)) ||
+                  (currentStep === 2 &&
+                    step2.detectedFurniture.length > 0 &&
+                    step2.selectedFurniture.length === 0) ||
+                  isSubmitting ||
+                  stepLoadingFor !== null ||
+                  step4FloorPlanLoading ||
+                  stepErrorMessage !== null
+                }
+              >
+                {isSubmitting || stepLoadingFor !== null
+                  ? "Processing..."
+                  : currentStep === 6
+                    ? "Complete"
                     : "Next step"}
-            </Button>
+              </Button>
+            )}
           </div>
         </div>
       </div>

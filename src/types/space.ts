@@ -185,6 +185,27 @@ export interface FillRoomFromInspirationFurnitureResponse {
   image: Image;
 }
 
+export interface FillRoomFromSurpriseRequest {
+  imageId: string;
+  aiContext: AIContext;
+}
+
+export interface FillRoomFromSurpriseResponse {
+  path?: string;
+  image: Image;
+}
+
+export interface FillRoomFromFloorPlanRequest {
+  imageId: string;
+  floorPlanImageId: string;
+  aiContext: AIContext;
+}
+
+export interface FillRoomFromFloorPlanResponse {
+  path?: string;
+  image: Image;
+}
+
 export interface CreateFullSpaceRequest {
   projectId?: string;
   imageId?: string;

@@ -416,6 +416,7 @@ export function StepCanvasPanel({
     step4,
     step5,
     stepLoadingFor,
+    step4FloorPlanLoading,
     stepErrorMessage,
     setStepErrorMessage,
   } = useAIGenerationFlowContext();
@@ -423,8 +424,11 @@ export function StepCanvasPanel({
   const cleanedImage = step2.cleanedImageUrl;
   const uploadedImage = cleanedImage ?? baseImage;
   const finalImage = step4.finalImageUrl;
+  const floorPlanResultImage = step4.floorPlanResultUrl;
 
-  const showLoader = stepLoadingFor === currentStep && stepLoadingFor !== null;
+  const showLoader =
+    (stepLoadingFor === currentStep && stepLoadingFor !== null) ||
+    (currentStep === 4 && step4FloorPlanLoading);
   const showError =
     stepErrorMessage && [2, 3, 4].includes(currentStep) && !showLoader;
 
@@ -505,7 +509,9 @@ export function StepCanvasPanel({
           />
         )}
         <StaticImageCanvas
-          uploadedImage={finalImage ?? uploadedImage}
+          uploadedImage={
+            floorPlanResultImage ?? finalImage ?? uploadedImage
+          }
           alt="Final design"
         />
       </div>

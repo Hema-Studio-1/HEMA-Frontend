@@ -100,12 +100,19 @@ export interface Step3Data {
   inspirationImages: string[];
   inspirationImageId: string | null;
   inspirationImageUrl: string | null;
+  generatedImageId: string | null;
+  generatedImageUrl: string | null;
 }
 
 /** Step 4: Room Layout */
 export interface Step4Data {
   selectedLayout: number | null;
   finalImageUrl: string | null;
+  floorPlanImageId: string | null;
+  floorPlanImageUrl: string | null;
+  floorPlanResultUrl: string | null;
+  surpriseImageUrl: string | null;
+  inspirationImages: string[];
 }
 
 /** Step 5: Amend Design */

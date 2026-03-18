@@ -1,12 +1,13 @@
 "use client";
 
-import { uploadImages } from "@/actions/upload-files";
+import { getSignedUrlForPath, uploadImages } from "@/actions/upload-files";
 import { StepChatInterface } from "@/components/StepChatInterface";
 import { StepLoader } from "@/components/StepLoader";
 import { StepTabSwitcher } from "@/components/StepTabSwitcher";
 import { Button } from "@/components/ui/button";
 import { useAIGenerationFlowContext } from "@/contexts/AIGenerationFlowContext";
 import { createImage } from "@/services/api/images";
+import { fillRoomFromFloorPlan } from "@/services/api/spaces";
 import { ImageType } from "@/types/image";
 import { Plus, Upload, X } from "lucide-react";
 import type React from "react";
@@ -618,13 +619,73 @@ function Step3Controls({
 function Step4Controls({
   selectedLayout,
   setSelectedLayout,
-  inspirationImages,
+  step4FloorPlanLoading,
   ...shared
 }: SharedPanelProps & {
   selectedLayout: number | null;
   setSelectedLayout: (value: number | null) => void;
-  inspirationImages: string[];
+  step4FloorPlanLoading: boolean;
 }) {
+  const {
+    step1,
+    step3,
+    step4,
+    setStep4FloorPlanLoading,
+  } = useAIGenerationFlowContext();
+  const [isFloorPlanUploading, setIsFloorPlanUploading] = useState(false);
+
+  const handleFloorPlanUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file || !file.type.startsWith("image/")) return;
+
+    const space = step1.space;
+    const generatedImageId = step3.generatedImageId;
+    if (!space || !generatedImageId) return;
+
+    setIsFloorPlanUploading(true);
+    try {
+      const [uploadResult] = await uploadImages(file, "hema");
+      if (!uploadResult.success || !uploadResult.path || !uploadResult.url) {
+        setIsFloorPlanUploading(false);
+        return;
+      }
+      const createResult = await createImage({
+        type: ImageType.ORIGINAL,
+        storagePath: uploadResult.path,
+      });
+      if (createResult.error || !createResult.data) {
+        setIsFloorPlanUploading(false);
+        return;
+      }
+      const floorPlanImageId = createResult.data.id;
+      step4.setFloorPlanImageId(floorPlanImageId);
+      step4.setFloorPlanImageUrl(uploadResult.url);
+
+      setStep4FloorPlanLoading(true);
+      const res = await fillRoomFromFloorPlan(space.id, {
+        imageId: generatedImageId,
+        floorPlanImageId,
+        aiContext: {
+          style_keywords: step3.styleKeywords,
+          mood: step3.mood,
+          materials: step3.materials,
+        },
+      });
+      setStep4FloorPlanLoading(false);
+
+      if (res.error) return;
+      const path = res.data?.path ?? res.data?.image?.storagePath;
+      const resultUrl = path ? await getSignedUrlForPath(path) : null;
+      if (resultUrl) {
+        step4.setFloorPlanResultUrl(resultUrl);
+      }
+    } finally {
+      setIsFloorPlanUploading(false);
+    }
+    e.target.value = "";
+  };
   const layoutCards = [
     {
       id: 1,
@@ -732,11 +793,12 @@ function Step4Controls({
               type="button"
               key={layout.id}
               onClick={() => setSelectedLayout(layout.id)}
+              disabled={step4FloorPlanLoading}
               className={`transition-all duration-300 ${
                 selectedLayout === layout.id
                   ? "opacity-100"
                   : "opacity-60 hover:opacity-80"
-              }`}
+              } ${step4FloorPlanLoading ? "pointer-events-none" : ""}`}
             >
               <div className="bg-[#FDFCFB] rounded-sm p-6 mb-2">
                 {layout.preview}
@@ -755,34 +817,55 @@ function Step4Controls({
           ))}
         </div>
 
-        {inspirationImages.length ? (
-          <div className="pt-2">
-            <p
-              className="text-[10px] text-textSecondary mb-3 uppercase tracking-widest"
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontWeight: 400,
-                letterSpacing: "0.15em",
-              }}
+        <div className="pt-6">
+          <h3
+            className="text-[16px] text-foreground mb-1"
+            style={{ fontFamily: "'Playfair Display', serif", fontWeight: 300 }}
+          >
+            Upload Your Own Floor Plan or Sketch
+          </h3>
+          <label
+            htmlFor="floor-plan-upload"
+            className={`block mt-3 ${isFloorPlanUploading || step4FloorPlanLoading ? "pointer-events-none opacity-70" : ""}`}
+          >
+            <div
+              className="bg-[#FDFCFB] rounded-sm p-4 flex flex-col items-center justify-center cursor-pointer transition-colors duration-300 hover:bg-[#FAF9F7] min-h-[80px] border border-dashed border-[#E8E6E3]"
+              style={{ fontFamily: "'Inter', sans-serif" }}
             >
-              Your Inspiration
-            </p>
-            <div className="grid grid-cols-3 gap-2">
-              {inspirationImages.map((src) => (
-                <div
-                  key={src}
-                  className="aspect-square rounded-sm overflow-hidden bg-[#FDFCFB] shadow-sm"
-                >
+              {isFloorPlanUploading ? (
+                <div className="flex flex-col items-center gap-2">
+                  <div className="h-6 w-6 rounded-full border-2 border-foreground/30 border-t-foreground animate-spin" />
+                  <p className="text-[10px] text-textSecondary">
+                    Uploading…
+                  </p>
+                </div>
+              ) : step4.floorPlanImageUrl ? (
+                <div className="relative w-full aspect-video max-h-24 rounded-sm overflow-hidden">
                   <img
-                    src={src}
-                    alt="Inspiration reference"
+                    src={step4.floorPlanImageUrl}
+                    alt="Floor plan"
                     className="w-full h-full object-cover"
                   />
                 </div>
-              ))}
+              ) : (
+                <>
+                  <Plus size={16} className="text-[#c5c5c5] mb-1" strokeWidth={1.5} />
+                  <p className="text-[10px] text-[#c5c5c5]">
+                    Floor Plan or sketch
+                  </p>
+                </>
+              )}
             </div>
-          </div>
-        ) : null}
+          </label>
+          <input
+            id="floor-plan-upload"
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleFloorPlanUpload}
+            disabled={isFloorPlanUploading || step4FloorPlanLoading}
+          />
+        </div>
       </div>
     </StepPanelShell>
   );
@@ -1134,6 +1217,7 @@ export function StepControlsPanel() {
     step5,
     step6,
     stepLoadingFor,
+    step4FloorPlanLoading,
   } = useAIGenerationFlowContext();
 
   const showPanelLoader =
@@ -1244,9 +1328,7 @@ export function StepControlsPanel() {
         currentStep={currentStep}
         selectedLayout={step4.selectedLayout}
         setSelectedLayout={step4.setSelectedLayout}
-        inspirationImages={
-          step3.inspirationImageUrl ? [step3.inspirationImageUrl] : []
-        }
+        step4FloorPlanLoading={step4FloorPlanLoading}
       />
     );
   }

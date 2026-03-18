@@ -48,11 +48,17 @@ export interface Step3Context extends Step3Data {
   setInspirationImages: Dispatch<SetStateAction<string[]>>;
   setInspirationImageId: Dispatch<SetStateAction<string | null>>;
   setInspirationImageUrl: Dispatch<SetStateAction<string | null>>;
+  setGeneratedImageId: Dispatch<SetStateAction<string | null>>;
+  setGeneratedImageUrl: Dispatch<SetStateAction<string | null>>;
 }
 
 export interface Step4Context extends Step4Data {
   setSelectedLayout: Dispatch<SetStateAction<number | null>>;
   setFinalImageUrl: Dispatch<SetStateAction<string | null>>;
+  setFloorPlanImageId: Dispatch<SetStateAction<string | null>>;
+  setFloorPlanImageUrl: Dispatch<SetStateAction<string | null>>;
+  setFloorPlanResultUrl: Dispatch<SetStateAction<string | null>>;
+  setSurpriseImageUrl: Dispatch<SetStateAction<string | null>>;
 }
 
 export interface Step5Context extends Step5Data {
@@ -104,8 +110,10 @@ export interface AIGenerationFlowContextValue {
   // Step loading & error (API calls after step change)
   stepLoadingFor: 2 | 3 | 4 | null;
   stepErrorMessage: string | null;
+  step4FloorPlanLoading: boolean;
   setStepLoadingFor: Dispatch<SetStateAction<2 | 3 | 4 | null>>;
   setStepErrorMessage: Dispatch<SetStateAction<string | null>>;
+  setStep4FloorPlanLoading: Dispatch<SetStateAction<boolean>>;
 
   // Actions
   handleClearDraft: (initialSpaceName?: string) => void;

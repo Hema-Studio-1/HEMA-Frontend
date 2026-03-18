@@ -7,8 +7,12 @@ import type {
     DetectFurnitureResponse,
     EmptyCompleteRoomRequest,
     EmptyCompleteRoomResponse,
+    FillRoomFromFloorPlanRequest,
+    FillRoomFromFloorPlanResponse,
     FillRoomFromInspirationFurnitureRequest,
     FillRoomFromInspirationFurnitureResponse,
+    FillRoomFromSurpriseRequest,
+    FillRoomFromSurpriseResponse,
     GetSpacesResponse,
     MeasureRoomRequest,
     MeasureRoomResponse,
@@ -115,6 +119,30 @@ export async function fillRoomFromInspirationFurniture(
 ): Promise<FetchResponse<FillRoomFromInspirationFurnitureResponse>> {
   return $axiosReq<FillRoomFromInspirationFurnitureResponse>({
     url: `spaces/${spaceId}/fill-room-from-inpiration-furniture`,
+    method: "POST",
+    data,
+    silent: true,
+  });
+}
+
+export async function fillRoomFromSurprise(
+  spaceId: string,
+  data: FillRoomFromSurpriseRequest,
+): Promise<FetchResponse<FillRoomFromSurpriseResponse>> {
+  return $axiosReq<FillRoomFromSurpriseResponse>({
+    url: `spaces/${spaceId}/fill-room-from-surprise`,
+    method: "POST",
+    data,
+    silent: true,
+  });
+}
+
+export async function fillRoomFromFloorPlan(
+  spaceId: string,
+  data: FillRoomFromFloorPlanRequest,
+): Promise<FetchResponse<FillRoomFromFloorPlanResponse>> {
+  return $axiosReq<FillRoomFromFloorPlanResponse>({
+    url: `spaces/${spaceId}/fill-room-from-floor-plan`,
     method: "POST",
     data,
     silent: true,

@@ -85,10 +85,22 @@ export function AIGenerationFlowProvider({
   const [inspirationImageUrl, setInspirationImageUrl] = useState<string | null>(
     null,
   );
+  const [generatedImageId, setGeneratedImageId] = useState<string | null>(null);
+  const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(
+    null,
+  );
 
   // Step 4
   const [selectedLayout, setSelectedLayout] = useState<number | null>(null);
   const [finalImageUrl, setFinalImageUrl] = useState<string | null>(null);
+  const [floorPlanImageId, setFloorPlanImageId] = useState<string | null>(null);
+  const [floorPlanImageUrl, setFloorPlanImageUrl] = useState<string | null>(
+    null,
+  );
+  const [floorPlanResultUrl, setFloorPlanResultUrl] = useState<string | null>(
+    null,
+  );
+  const [surpriseImageUrl, setSurpriseImageUrl] = useState<string | null>(null);
 
   // Step 5
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
@@ -111,6 +123,7 @@ export function AIGenerationFlowProvider({
   // Step loading & error (shown in target step after advance)
   const [stepLoadingFor, setStepLoadingFor] = useState<2 | 3 | 4 | null>(null);
   const [stepErrorMessage, setStepErrorMessage] = useState<string | null>(null);
+  const [step4FloorPlanLoading, setStep4FloorPlanLoading] = useState(false);
 
   // Chat
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -142,6 +155,7 @@ export function AIGenerationFlowProvider({
     setImageId(null);
     setImageDimensions(null);
     setDetectedFurniture([]);
+    setDetectedFurnitureGrouped([]);
     setSelectedFurniture([]);
     setCleanedImageUrl(null);
     setIntermediateImageId(null);
@@ -151,10 +165,17 @@ export function AIGenerationFlowProvider({
     setInspirationImages([]);
     setInspirationImageId(null);
     setInspirationImageUrl(null);
+    setGeneratedImageId(null);
+    setGeneratedImageUrl(null);
     setSelectedLayout(null);
     setFinalImageUrl(null);
+    setFloorPlanImageId(null);
+    setFloorPlanImageUrl(null);
+    setFloorPlanResultUrl(null);
+    setSurpriseImageUrl(null);
     setStepLoadingFor(null);
     setStepErrorMessage(null);
+    setStep4FloorPlanLoading(false);
     setActiveFilters([]);
     setShowBeforeAfter(false);
     setCustomProductImages([]);
@@ -247,12 +268,16 @@ export function AIGenerationFlowProvider({
       inspirationImages,
       inspirationImageId,
       inspirationImageUrl,
+      generatedImageId,
+      generatedImageUrl,
       setStyleKeywords,
       setMood,
       setMaterials,
       setInspirationImages,
       setInspirationImageId,
       setInspirationImageUrl,
+      setGeneratedImageId,
+      setGeneratedImageUrl,
     }),
     [
       styleKeywords,
@@ -261,6 +286,8 @@ export function AIGenerationFlowProvider({
       inspirationImages,
       inspirationImageId,
       inspirationImageUrl,
+      generatedImageId,
+      generatedImageUrl,
     ],
   );
 
@@ -269,10 +296,26 @@ export function AIGenerationFlowProvider({
       selectedLayout,
       inspirationImages,
       finalImageUrl,
+      floorPlanImageId,
+      floorPlanImageUrl,
+      floorPlanResultUrl,
+      surpriseImageUrl,
       setSelectedLayout,
       setFinalImageUrl,
+      setFloorPlanImageId,
+      setFloorPlanImageUrl,
+      setFloorPlanResultUrl,
+      setSurpriseImageUrl,
     }),
-    [selectedLayout, inspirationImages, finalImageUrl],
+    [
+      selectedLayout,
+      inspirationImages,
+      finalImageUrl,
+      floorPlanImageId,
+      floorPlanImageUrl,
+      floorPlanResultUrl,
+      surpriseImageUrl,
+    ],
   );
 
   const step5: Step5Context = useMemo(
@@ -326,8 +369,10 @@ export function AIGenerationFlowProvider({
       setCurrentVersion,
       stepLoadingFor,
       stepErrorMessage,
+      step4FloorPlanLoading,
       setStepLoadingFor,
       setStepErrorMessage,
+      setStep4FloorPlanLoading,
       handleClearDraft,
       handleSendMessage,
     }),
@@ -351,6 +396,7 @@ export function AIGenerationFlowProvider({
       currentVersion,
       stepLoadingFor,
       stepErrorMessage,
+      step4FloorPlanLoading,
       handleClearDraft,
       handleSendMessage,
     ],

@@ -24,13 +24,24 @@ export function ImagePhaseGrid() {
   const originalImage = step1.uploadedImageUrl ?? step1.uploadedImage;
   const cleanedImage = step2.cleanedImageUrl;
   const inspirationImage = step3.inspirationImageUrl;
-  const finalImage = step4.finalImageUrl;
+  const generatedImage = step3.generatedImageUrl ?? step4.finalImageUrl;
+  const surpriseImage = step4.surpriseImageUrl;
+  const floorPlanImage = step4.floorPlanImageUrl;
+  const floorPlanResultImage = step4.floorPlanResultUrl;
 
   const phases: PhaseItem[] = [
     ...(originalImage ? [{ label: "Original", src: originalImage }] : []),
     ...(cleanedImage ? [{ label: "Remove furniture", src: cleanedImage }] : []),
     ...(inspirationImage ? [{ label: "Inspiration", src: inspirationImage }] : []),
-    ...(finalImage ? [{ label: "Final design", src: finalImage }] : []),
+    ...(surpriseImage
+      ? [{ label: "Surprise", src: surpriseImage }]
+      : generatedImage
+        ? [{ label: "Generated design", src: generatedImage }]
+        : []),
+    ...(floorPlanImage ? [{ label: "Floor plan", src: floorPlanImage }] : []),
+    ...(floorPlanResultImage
+      ? [{ label: "Floor plan result", src: floorPlanResultImage }]
+      : []),
   ];
 
   if (phases.length === 0) return null;
@@ -60,7 +71,7 @@ export function ImagePhaseGrid() {
                 aria-hidden
               />
               <span
-                className="absolute bottom-0 left-0 right-0 px- py-1 text-background font-medium bg-foreground/80 backdrop-blur-sm text-center text-[8px]"
+                className="absolute bottom-0 left-0 right-0 px-2 py-1 text-background font-medium bg-foreground/80 backdrop-blur-sm text-center text-[8px]"
                 style={{
                   fontFamily: "'Inter', sans-serif",
                   letterSpacing: "0.02em",
