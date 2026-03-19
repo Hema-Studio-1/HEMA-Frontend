@@ -1,4 +1,5 @@
 import { parseApiError } from "@/lib/auth-client-errors";
+import { ENV_VARIABLES } from "@/lib/env-variables";
 import type { User } from "next-auth";
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -158,11 +159,11 @@ export const authOptions = {
   //       httpOnly: true,
   //       sameSite: 'lax',
   //       path: '/',
-  //       secure: process.env.NODE_ENV === 'production',
+  //       secure: ENV_VARIABLES.NODE_ENV === 'production',
   //     },
   //   },
   // },
-  secret: process.env.NEXTAUTH_SECRET || "your-secret-key-change-in-production",
+  secret: ENV_VARIABLES.NEXTAUTH_SECRET,
 };
 
 export default NextAuth(authOptions);
