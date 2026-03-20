@@ -1,0 +1,3 @@
+# Proxy frontend API calls to the HTTP backend on Netlify.
+# Keep Next.js routes like /api/auth/* untouched by using /api-proxy.
+/api-proxy/*  http://13.63.129.97/api/v1/:splat  200!

@@ -1,5 +1,6 @@
 import { useAIGenerationFlowContext } from "@/contexts/AIGenerationFlowContext";
 import { extractSpaceDimensions } from "@/lib/dimensions";
+import { ENV_VARIABLES } from "@/lib/env-variables";
 // import { getSpaces } from "@/services/api/spaces";
 import { getSignedImgUrl } from "@/supabase/image-url-client";
 import type { SpaceType, SpaceWithRelations } from "@/types/space";
@@ -238,6 +239,9 @@ async function mapSpaceToGalleryItem(
 export function Gallery({ onEditSpace, onViewSpace }: GalleryProps) {
   const { step1, setCurrentStep } = useAIGenerationFlowContext();
   const { status } = useSession();
+  const hasForcedToken = Boolean(ENV_VARIABLES.FORCE_ACCESS_TOKEN);
+  const isAuthenticated = status === "authenticated" || hasForcedToken;
+  const [hasClientMounted, setHasClientMounted] = useState(false);
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [infoDialogOpen, setInfoDialogOpen] = useState(false);
   const [selectedSpace, setSelectedSpace] = useState<GalleryImage | null>(null);
@@ -245,7 +249,11 @@ export function Gallery({ onEditSpace, onViewSpace }: GalleryProps) {
   const [spaceToDelete, setSpaceToDelete] = useState<GalleryImage | null>(null);
 
   useEffect(() => {
-    if (status !== "authenticated") {
+    setHasClientMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
       if (status === "unauthenticated") {
         setImages([]);
       }
@@ -275,7 +283,7 @@ export function Gallery({ onEditSpace, onViewSpace }: GalleryProps) {
     return () => {
       isMounted = false;
     };
-  }, [status]);
+  }, [status, isAuthenticated]);
 
   const handleToggleLike = (id: string) => {
     setImages(
@@ -303,18 +311,19 @@ export function Gallery({ onEditSpace, onViewSpace }: GalleryProps) {
   return (
     <div className="w-full mt-12 min-w-0">
       {/* Masonry Gallery - full width, columns from viewport; no skipped items */}
-      <ResponsiveMasonry
-        columnsCountBreakPoints={{
-          0: 1,
-          420: 2,
-          768: 3,
-          1200: 4,
-          1920: 5,
-        }}
-        gutterBreakPoints={{ 0: "15px" }}
-      >
-        <Masonry>
-          {images.map((image) => (
+      {hasClientMounted ? (
+        <ResponsiveMasonry
+          columnsCountBreakPoints={{
+            0: 1,
+            420: 2,
+            768: 3,
+            1200: 4,
+            1920: 5,
+          }}
+          gutterBreakPoints={{ 0: "15px" }}
+        >
+          <Masonry>
+            {images.map((image) => (
             <div key={image.id} className="relative cursor-pointer group">
               {/* Image sits directly on canvas */}
               <NextImage
@@ -415,9 +424,12 @@ export function Gallery({ onEditSpace, onViewSpace }: GalleryProps) {
               <p className="mt-1.5 font-medium">{image.caption}</p>
               {/* )} */}
             </div>
-          ))}
-        </Masonry>
-      </ResponsiveMasonry>
+            ))}
+          </Masonry>
+        </ResponsiveMasonry>
+      ) : (
+        <div className="min-h-px" />
+      )}
 
       {/* Info Dialog */}
       <SpaceInfoDialog

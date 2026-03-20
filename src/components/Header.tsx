@@ -1,6 +1,7 @@
 import { Bell, Loader2, User } from "lucide-react";
+import { ENV_VARIABLES } from "@/lib/env-variables";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface HeaderProps {
   onHomeClick: () => void;
@@ -9,7 +10,14 @@ interface HeaderProps {
 
 export function Header({ onHomeClick, onNotificationsClick }: HeaderProps) {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const { data: session, status } = useSession();
+  const hasForcedToken = Boolean(ENV_VARIABLES.FORCE_ACCESS_TOKEN);
+  const hasForcedTokenReady = isMounted && hasForcedToken;
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const notifications = [
     {
@@ -154,30 +162,36 @@ export function Header({ onHomeClick, onNotificationsClick }: HeaderProps) {
               fontWeight: 400,
             }}
           >
-            {status === "loading" && (
+            {(!isMounted || (status === "loading" && !hasForcedTokenReady)) && (
               <>
                 <Loader2 size={14} className="animate-spin text-[#626262]" />
                 <span className="text-[#626262]">Connecting...</span>
               </>
             )}
-            {status === "authenticated" && (
+            {isMounted && (status === "authenticated" || hasForcedTokenReady) && (
               <>
                 <span
                   className="w-2 h-2 rounded-full bg-green-500 shrink-0"
-                  title="Authenticated"
+                  title={
+                    hasForcedTokenReady
+                      ? "Authenticated (forced token)"
+                      : "Authenticated"
+                  }
                 />
                 <span className="text-[#1a1a1a]">
-                  {session?.user?.name || session?.user?.email || "Demo User"}
+                  {session?.user?.name ||
+                    session?.user?.email ||
+                    (hasForcedTokenReady ? "Token Session" : "Demo User")}
                 </span>
               </>
             )}
-            {status === "unauthenticated" && (
+            {isMounted && status === "unauthenticated" && !hasForcedTokenReady && (
               <>
                 <span
                   className="w-2 h-2 rounded-full bg-red-500 shrink-0"
-                  title="Auth failed"
+                  title="Not signed in"
                 />
-                <span className="text-red-600">Auth Failed</span>
+                <span className="text-red-600">Signed out</span>
               </>
             )}
           </div>
