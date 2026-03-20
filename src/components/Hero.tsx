@@ -10,9 +10,8 @@ interface HeroProps {
 
 export function Hero({ onStartAIFlow }: HeroProps) {
   const { status } = useSession();
-  const hasForcedToken = Boolean(process.env.NEXT_PUBLIC_FORCE_ACCESS_TOKEN);
-  const isSessionReady = hasForcedToken || status !== "loading";
-  const isAuthenticated = status === "authenticated" || hasForcedToken;
+  const isSessionReady = status !== "loading";
+  const isAuthenticated = status === "authenticated";
   const isGenerateDisabled = !isSessionReady || !isAuthenticated;
 
   return (
@@ -54,7 +53,7 @@ export function Hero({ onStartAIFlow }: HeroProps) {
             disabled={isGenerateDisabled}
             title={
               !isAuthenticated && isSessionReady
-                ? "Sign in or set forced token to generate"
+                ? "Sign in to generate"
                 : undefined
             }
             className="flex items-center gap-2 px-8 py-3 bg-foreground text-background text-[13px] hover:bg-[#3d3d3d] transition-colors duration-300 shrink-0 ml-8 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-foreground"

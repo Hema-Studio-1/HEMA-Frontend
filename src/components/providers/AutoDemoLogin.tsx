@@ -11,10 +11,8 @@ import { useEffect, useRef } from "react";
 export function AutoDemoLogin() {
   const attemptedRef = useRef(false);
   const { status } = useSession();
-  const hasForcedToken = Boolean(process.env.NEXT_PUBLIC_FORCE_ACCESS_TOKEN);
 
   useEffect(() => {
-    if (hasForcedToken) return;
     if (attemptedRef.current) return;
     if (status !== "unauthenticated") return;
 
@@ -28,7 +26,7 @@ export function AutoDemoLogin() {
       email,
       password,
     });
-  }, [status, hasForcedToken]);
+  }, [status]);
 
   return null;
 }

@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { ENV_VARIABLES } from "@/lib/env-variables";
 import type { SuccessMessageFunction } from "@/services/api/api.types";
 import axios from "axios";
 import { getSession } from "next-auth/react";
@@ -14,12 +13,9 @@ export const getAuthToken = async (): Promise<string | null> => {
   // const cached = getCachedAccessToken();
   // if (cached) return cached;
   try {
-    if (process.env.NEXT_PUBLIC_FORCE_ACCESS_TOKEN) {
-      return process.env.NEXT_PUBLIC_FORCE_ACCESS_TOKEN;
-    }
     if (typeof window !== "undefined") {
       const session = await getSession();
-      return session?.accessToken || process.env.NEXT_PUBLIC_FORCE_ACCESS_TOKEN || null;
+      return session?.accessToken || null;
     }
     return null;
   } catch (error) {

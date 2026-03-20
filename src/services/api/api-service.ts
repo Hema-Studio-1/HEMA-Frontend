@@ -66,16 +66,12 @@ async function waitForSessionAccessToken(
   pollIntervalMs = 200,
 ): Promise<string | null> {
   if (typeof window === "undefined") return null;
-  if (process.env.NEXT_PUBLIC_FORCE_ACCESS_TOKEN) return process.env.NEXT_PUBLIC_FORCE_ACCESS_TOKEN;
 
   const start = Date.now();
   while (Date.now() - start <= timeoutMs) {
     const session = await getSession();
     if (session?.accessToken) {
       return session.accessToken;
-    }
-    if (process.env.NEXT_PUBLIC_FORCE_ACCESS_TOKEN) {
-      return process.env.NEXT_PUBLIC_FORCE_ACCESS_TOKEN;
     }
     await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
   }

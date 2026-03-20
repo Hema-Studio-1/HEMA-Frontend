@@ -1,6 +1,5 @@
 "use client";
 
-import { ENV_VARIABLES } from "@/lib/env-variables";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useState } from "react";
 
@@ -9,7 +8,6 @@ const RETRY_DELAY_MS = 4000;
 
 export function SessionLoaderOverlay() {
   const { status, update } = useSession();
-  const hasForcedToken = Boolean('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3OTMzMzAxNy00MzRkLTRhYzgtYWJhNS02NjQxOWVjODg5ZDQiLCJyb2xlIjoiYXV0aGVudGljYXRlZCIsImF1ZCI6ImF1dGhlbnRpY2F0ZWQiLCJpYXQiOjE3NzQwMjUyOTMsImV4cCI6MTc3NDE1NDg5M30._0sF8OqctLf9TdFLOARGzUk6Ffd7P47OsVrJzYDCVA8';
   const [retryCount, setRetryCount] = useState(0);
   const [showError, setShowError] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
@@ -25,11 +23,6 @@ export function SessionLoaderOverlay() {
   }, [update]);
 
   useEffect(() => {
-    if (hasForcedToken) {
-      setRetryCount(0);
-      setShowError(false);
-      return;
-    }
     if (status !== "loading") {
       setRetryCount(0);
       setShowError(false);
@@ -46,9 +39,7 @@ export function SessionLoaderOverlay() {
     }, RETRY_DELAY_MS);
 
     return () => clearTimeout(timer);
-  }, [status, retryCount, update, hasForcedToken]);
-
-  if (hasForcedToken) return null;
+  }, [status, retryCount, update]);
 
   if (status !== "loading" && !showError) return null;
 

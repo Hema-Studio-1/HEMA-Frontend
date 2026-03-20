@@ -1,6 +1,5 @@
 import { useAIGenerationFlowContext } from "@/contexts/AIGenerationFlowContext";
 import { extractSpaceDimensions } from "@/lib/dimensions";
-import { ENV_VARIABLES } from "@/lib/env-variables";
 // import { getSpaces } from "@/services/api/spaces";
 import { getSignedImgUrl } from "@/supabase/image-url-client";
 import type { SpaceType, SpaceWithRelations } from "@/types/space";
@@ -239,8 +238,7 @@ async function mapSpaceToGalleryItem(
 export function Gallery({ onEditSpace, onViewSpace }: GalleryProps) {
   const { step1, setCurrentStep } = useAIGenerationFlowContext();
   const { status } = useSession();
-  const hasForcedToken = Boolean('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3OTMzMzAxNy00MzRkLTRhYzgtYWJhNS02NjQxOWVjODg5ZDQiLCJyb2xlIjoiYXV0aGVudGljYXRlZCIsImF1ZCI6ImF1dGhlbnRpY2F0ZWQiLCJpYXQiOjE3NzQwMjUyOTMsImV4cCI6MTc3NDE1NDg5M30._0sF8OqctLf9TdFLOARGzUk6Ffd7P47OsVrJzYDCVA8';
-  const isAuthenticated = status === "authenticated" || hasForcedToken;
+  const isAuthenticated = status === "authenticated";
   const [hasClientMounted, setHasClientMounted] = useState(false);
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [infoDialogOpen, setInfoDialogOpen] = useState(false);
