@@ -1,6 +1,5 @@
 "use client";
 
-import { ENV_VARIABLES } from "@/lib/env-variables";
 import { Sparkles } from "lucide-react";
 import { useSession } from "next-auth/react";
 import React from "react";
@@ -11,7 +10,7 @@ interface HeroProps {
 
 export function Hero({ onStartAIFlow }: HeroProps) {
   const { status } = useSession();
-  const hasForcedToken = Boolean(ENV_VARIABLES.FORCE_ACCESS_TOKEN);
+  const hasForcedToken = Boolean(process.env.NEXT_PUBLIC_FORCE_ACCESS_TOKEN);
   const isSessionReady = hasForcedToken || status !== "loading";
   const isAuthenticated = status === "authenticated" || hasForcedToken;
   const isGenerateDisabled = !isSessionReady || !isAuthenticated;

@@ -14,12 +14,12 @@ export const getAuthToken = async (): Promise<string | null> => {
   // const cached = getCachedAccessToken();
   // if (cached) return cached;
   try {
-    if (ENV_VARIABLES.FORCE_ACCESS_TOKEN) {
-      return ENV_VARIABLES.FORCE_ACCESS_TOKEN;
+    if (process.env.NEXT_PUBLIC_FORCE_ACCESS_TOKEN) {
+      return process.env.NEXT_PUBLIC_FORCE_ACCESS_TOKEN;
     }
     if (typeof window !== "undefined") {
       const session = await getSession();
-      return session?.accessToken || ENV_VARIABLES.FORCE_ACCESS_TOKEN || null;
+      return session?.accessToken || process.env.NEXT_PUBLIC_FORCE_ACCESS_TOKEN || null;
     }
     return null;
   } catch (error) {

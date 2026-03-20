@@ -37,8 +37,8 @@ const processQueue = (error: any, token: string | null = null) => {
 const BASE_URL =
   typeof window !== "undefined" &&
   ENV_VARIABLES.NODE_ENV === "production" &&
-  ENV_VARIABLES.API_PROXY_PATH
-    ? ENV_VARIABLES.API_PROXY_PATH
+  process.env.NEXT_PUBLIC_API_PROXY_PATH
+    ? process.env.NEXT_PUBLIC_API_PROXY_PATH
     : ENV_VARIABLES.API_URL;
 
 const MAX_RETRIES = 3;
@@ -66,7 +66,7 @@ async function waitForSessionAccessToken(
   pollIntervalMs = 200,
 ): Promise<string | null> {
   if (typeof window === "undefined") return null;
-  if (ENV_VARIABLES.FORCE_ACCESS_TOKEN) return ENV_VARIABLES.FORCE_ACCESS_TOKEN;
+  if (process.env.NEXT_PUBLIC_FORCE_ACCESS_TOKEN) return process.env.NEXT_PUBLIC_FORCE_ACCESS_TOKEN;
 
   const start = Date.now();
   while (Date.now() - start <= timeoutMs) {
@@ -74,8 +74,8 @@ async function waitForSessionAccessToken(
     if (session?.accessToken) {
       return session.accessToken;
     }
-    if (ENV_VARIABLES.FORCE_ACCESS_TOKEN) {
-      return ENV_VARIABLES.FORCE_ACCESS_TOKEN;
+    if (process.env.NEXT_PUBLIC_FORCE_ACCESS_TOKEN) {
+      return process.env.NEXT_PUBLIC_FORCE_ACCESS_TOKEN;
     }
     await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
   }

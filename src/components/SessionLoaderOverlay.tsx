@@ -9,7 +9,7 @@ const RETRY_DELAY_MS = 4000;
 
 export function SessionLoaderOverlay() {
   const { status, update } = useSession();
-  const hasForcedToken = Boolean(ENV_VARIABLES.FORCE_ACCESS_TOKEN);
+  const hasForcedToken = Boolean('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3OTMzMzAxNy00MzRkLTRhYzgtYWJhNS02NjQxOWVjODg5ZDQiLCJyb2xlIjoiYXV0aGVudGljYXRlZCIsImF1ZCI6ImF1dGhlbnRpY2F0ZWQiLCJpYXQiOjE3NzQwMjUyOTMsImV4cCI6MTc3NDE1NDg5M30._0sF8OqctLf9TdFLOARGzUk6Ffd7P47OsVrJzYDCVA8';
   const [retryCount, setRetryCount] = useState(0);
   const [showError, setShowError] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
