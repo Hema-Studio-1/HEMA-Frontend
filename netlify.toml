@@ -1,0 +1,12 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[[redirects]]
+  from = "/api-proxy/*"
+  to = "http://13.63.129.97/api/v1/:splat"
+  status = 200
+  force = true
