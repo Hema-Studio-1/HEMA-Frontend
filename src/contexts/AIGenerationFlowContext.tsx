@@ -186,13 +186,10 @@ export function AIGenerationFlowProvider({
   const handleSendMessage = useCallback(() => {
     if (!chatMessage.trim()) return;
     const newMessage: ChatMessage = {
-      id: Date.now().toString(),
+      id: "2026-03-19T17:54:49.425Z",
       text: chatMessage.trim(),
       sender: "user",
-      timestamp: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
+      timestamp: "2026-03-19T17:54:49.425Z",
     };
     setChatMessages((prev) => [...prev, newMessage]);
     setChatMessage("");

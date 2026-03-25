@@ -23,8 +23,12 @@ import {
   removeFurniture,
 } from "@/services/api/spaces";
 import type {
+  DetectedObject,
   DetectFurnitureResponse,
   DetectFurnitureResult,
+  DetectionBoundingBox,
+  FlatDetectedItem,
+  GroupedDetectedItems,
 } from "@/types/space";
 import {
   ArrowLeft,
@@ -102,12 +106,108 @@ export function AIGenerationFlow({
     imgWidth: number,
     imgHeight: number,
   ): DetectedFurnitureGroup[] {
-    const groups: DetectedFurnitureGroup[] = [];
+    const groupsByCategory = new Map<string, DetectedFurnitureItem[]>();
     let globalIndex = 0;
 
-    const raw = res as Record<string, Array<{ label: string; boundingBox?: { x: number; y: number; width: number; height: number } }>>;
+    const raw = res as Record<string, unknown>;
     let data: DetectFurnitureResult | undefined;
     let segmentedObjects: unknown[] | undefined;
+
+    const toDetectedFurnitureItem = (
+      label: string,
+      boundingBox?: DetectionBoundingBox | null,
+    ): DetectedFurnitureItem => {
+      const id = `${label}-${globalIndex}`;
+      globalIndex += 1;
+      const isNormalized =
+        boundingBox != null &&
+        boundingBox.x <= 1 &&
+        boundingBox.y <= 1 &&
+        boundingBox.width <= 1 &&
+        boundingBox.height <= 1 &&
+        boundingBox.x >= 0 &&
+        boundingBox.y >= 0;
+
+      if (boundingBox && isNormalized && imgWidth && imgHeight) {
+        return {
+          id,
+          label,
+          maskUrl: "",
+          objectUrl: baseImageUrl,
+          boundingBox: {
+            x: boundingBox.x * imgWidth,
+            y: boundingBox.y * imgHeight,
+            width: boundingBox.width * imgWidth,
+            height: boundingBox.height * imgHeight,
+          },
+        };
+      }
+
+      return {
+        id,
+        label,
+        maskUrl: "",
+        objectUrl: baseImageUrl,
+        boundingBox:
+          boundingBox == null
+            ? null
+            : {
+                x: boundingBox.x,
+                y: boundingBox.y,
+                width: boundingBox.width,
+                height: boundingBox.height,
+              },
+      };
+    };
+
+    const addItemToGroup = (
+      category: string,
+      item: DetectedFurnitureItem,
+    ): void => {
+      const normalizedCategory = category || "other";
+      const group = groupsByCategory.get(normalizedCategory);
+      if (group) {
+        group.push(item);
+        return;
+      }
+
+      groupsByCategory.set(normalizedCategory, [item]);
+    };
+
+    type FlatLikeDetection = FlatDetectedItem | DetectedObject;
+
+    const isFlatDetection = (value: unknown): value is FlatLikeDetection => {
+      if (value == null || typeof value !== "object") {
+        return false;
+      }
+
+      const detection = value as {
+        detected?: unknown;
+        label?: unknown;
+      };
+
+      return (
+        typeof detection.label === "string" ||
+        typeof detection.detected === "string"
+      );
+    };
+
+    const isGroupedDetection = (
+      value: unknown,
+    ): value is GroupedDetectedItems =>
+      value != null && typeof value === "object" && !isFlatDetection(value);
+
+    const getDetectionLabel = (detection: FlatLikeDetection): string => {
+      if (typeof (detection as FlatDetectedItem).label === "string") {
+        return (detection as FlatDetectedItem).label;
+      }
+
+      if (typeof (detection as DetectedObject).detected === "string") {
+        return (detection as DetectedObject).detected;
+      }
+
+      return "item";
+    };
 
     if (Array.isArray(res)) {
       data = res[0] as DetectFurnitureResult;
@@ -134,9 +234,10 @@ export function AIGenerationFlow({
       const inner = raw.data as unknown as Record<string, unknown>;
       if (inner.parsed != null && typeof inner.parsed === "object") {
         const parsedVal = inner.parsed;
-        data = Array.isArray(parsedVal) && parsedVal.length > 0
-          ? (parsedVal[0] as unknown as DetectFurnitureResult)
-          : (parsedVal as unknown as DetectFurnitureResult);
+        data =
+          Array.isArray(parsedVal) && parsedVal.length > 0
+            ? (parsedVal[0] as unknown as DetectFurnitureResult)
+            : (parsedVal as unknown as DetectFurnitureResult);
         segmentedObjects = Array.isArray(inner.segmentedObjects)
           ? inner.segmentedObjects
           : Array.isArray(raw.segmentedObjects)
@@ -155,93 +256,70 @@ export function AIGenerationFlow({
       data?.detections ??
       (Array.isArray((raw as { detections?: unknown }).detections)
         ? (raw as { detections: unknown[] }).detections
-        : undefined);
+        : Array.isArray(data?.output?.detections)
+          ? data.output.detections
+          : undefined);
 
     if (detections && Array.isArray(detections)) {
-      for (const categoryObj of detections) {
-        const obj = categoryObj as Record<string, unknown>;
-        for (const [categoryName, itemsArr] of Object.entries(obj)) {
-          if (!Array.isArray(itemsArr)) continue;
-          const items: DetectedFurnitureItem[] = [];
-          for (const item of itemsArr) {
-            const label = item?.label ?? "item";
-            const bbox = item?.boundingBox;
-            const id = `${label}-${globalIndex}`;
-            globalIndex += 1;
-            const isNormalized =
-              bbox &&
-              bbox.x <= 1 &&
-              bbox.y <= 1 &&
-              bbox.width <= 1 &&
-              bbox.height <= 1 &&
-              bbox.x >= 0 &&
-              bbox.y >= 0;
-            if (bbox && isNormalized && imgWidth && imgHeight) {
-              items.push({
-                id,
-                label,
-                maskUrl: "",
-                objectUrl: baseImageUrl,
-                boundingBox: {
-                  x: bbox.x * imgWidth,
-                  y: bbox.y * imgHeight,
-                  width: bbox.width * imgWidth,
-                  height: bbox.height * imgHeight,
-                },
-              });
-            } else if (bbox) {
-              items.push({
-                id,
-                label,
-                maskUrl: "",
-                objectUrl: baseImageUrl,
-                boundingBox: {
-                  x: bbox.x,
-                  y: bbox.y,
-                  width: bbox.width,
-                  height: bbox.height,
-                },
-              });
-            } else {
-              items.push({
-                id,
-                label,
-                maskUrl: "",
-                objectUrl: baseImageUrl,
-                boundingBox: null,
-              });
-            }
+      for (const detection of detections) {
+        if (isFlatDetection(detection)) {
+          addItemToGroup(
+            detection.category ?? "other",
+            toDetectedFurnitureItem(
+              getDetectionLabel(detection),
+              detection.boundingBox,
+            ),
+          );
+          continue;
+        }
+
+        if (!isGroupedDetection(detection)) {
+          continue;
+        }
+
+        for (const [categoryName, itemsArr] of Object.entries(detection)) {
+          if (!Array.isArray(itemsArr)) {
+            continue;
           }
-          if (items.length > 0) {
-            groups.push({
-              category: categoryName,
-              items,
-            });
+
+          for (const item of itemsArr) {
+            if (!isFlatDetection(item)) {
+              continue;
+            }
+
+            addItemToGroup(
+              categoryName,
+              toDetectedFurnitureItem(
+                getDetectionLabel(item),
+                item.boundingBox,
+              ),
+            );
           }
         }
       }
     }
 
     if (segmentedObjects && Array.isArray(segmentedObjects)) {
-      const items: DetectedFurnitureItem[] = [];
       for (const obj of segmentedObjects) {
-        const seg = obj as { label: string; boundingBox?: { x: number; y: number; width: number; height: number } | null };
-        const id = `${seg.label}-${globalIndex}`;
-        globalIndex += 1;
-        items.push({
-          id,
-          label: seg.label,
-          maskUrl: "",
-          objectUrl: baseImageUrl,
-          boundingBox: seg.boundingBox ?? null,
-        });
-      }
-      if (items.length > 0) {
-        groups.push({ category: "other", items });
+        const seg = obj as {
+          label?: string;
+          boundingBox?: DetectionBoundingBox | null;
+        };
+        if (!seg.label) {
+          continue;
+        }
+
+        addItemToGroup(
+          "other",
+          toDetectedFurnitureItem(seg.label, seg.boundingBox),
+        );
       }
     }
 
-    return groups;
+    return Array.from(groupsByCategory, ([category, items]) => ({
+      category,
+      items,
+    }));
   }
 
   const handleStep1Submit = async () => {
@@ -262,7 +340,8 @@ export function AIGenerationFlow({
 
     try {
       const roomType =
-        normalizeRoomType(step1.roomTypes[0] ?? step1.roomType) || "living_room";
+        normalizeRoomType(step1.roomTypes[0] ?? step1.roomType) ||
+        "living_room";
       const createPayload = {
         name: step1.spaceName.trim() || "New Space",
         description: "",
@@ -292,12 +371,9 @@ export function AIGenerationFlow({
       const detectResult = await detectFurniture(space.id, { imageId });
       if (detectResult.error) {
         setStepLoadingFor(null);
-        setStepErrorMessage(
-          detectResult.error ?? "Failed to detect furniture",
-        );
+        setStepErrorMessage(detectResult.error ?? "Failed to detect furniture");
         return;
       }
-      
 
       const imgDims = step1.imageDimensions;
       const imgWidth = imgDims?.width ?? 1920;
@@ -309,9 +385,9 @@ export function AIGenerationFlow({
         imgWidth,
         imgHeight,
       );
-      console.log('groupedItems', groupedItems);
+      console.log("groupedItems", groupedItems);
       const flatItems = groupedItems.flatMap((g) => g.items);
-      console.log('flatItems', flatItems);
+      console.log("flatItems", flatItems);
       step2.setDetectedFurnitureGrouped(groupedItems);
       step2.setDetectedFurniture(flatItems);
       step2.setSelectedFurniture([]);
@@ -338,12 +414,21 @@ export function AIGenerationFlow({
       step2.detectedFurniture.length === 0 ||
       step2.selectedFurniture.length === step2.detectedFurniture.length;
 
+    // Allow proceeding without selecting any element:
+    // - skip remove/empty-room APIs
+    // - use the original image as the "intermediate" input for step 3
+    // - keep cleaned image URL unset so step 3 shows the original
     if (!allSelected) {
       const selectedItems = step2.detectedFurniture.filter((item) =>
         step2.selectedFurniture.includes(item.id),
       );
+
       if (selectedItems.length === 0) {
-        toast.error("Please select at least one element to remove.");
+        step2.setCleanedImageUrl(null);
+        step2.setIntermediateImageId(imageId);
+        setCurrentStep(3);
+        setStepLoadingFor(null);
+        setStepErrorMessage(null);
         return;
       }
     }
@@ -357,7 +442,10 @@ export function AIGenerationFlow({
     setStepLoadingFor(3);
 
     try {
-      let result: { path?: string; image?: { id?: string; storagePath?: string } } | null = null;
+      let result: {
+        path?: string;
+        image?: { id?: string; storagePath?: string };
+      } | null = null;
 
       if (allSelected) {
         const res = await emptyCompleteRoom(space.id, { imageId });
@@ -518,7 +606,9 @@ export function AIGenerationFlow({
     } catch (error) {
       setStepLoadingFor(null);
       setStepErrorMessage(
-        error instanceof Error ? error.message : "Failed to generate surprise design",
+        error instanceof Error
+          ? error.message
+          : "Failed to generate surprise design",
       );
     } finally {
       setIsSubmitting(false);
@@ -739,9 +829,7 @@ export function AIGenerationFlow({
                   <Button
                     onClick={handlePreviousStep}
                     variant="link"
-                    disabled={
-                      currentStep === 1 || step4FloorPlanLoading
-                    }
+                    disabled={currentStep === 1 || step4FloorPlanLoading}
                   >
                     Go back
                   </Button>
@@ -782,9 +870,6 @@ export function AIGenerationFlow({
                     disabled={
                       (currentStep === 1 &&
                         !(step1.uploadedImageUrl ?? step1.uploadedImage)) ||
-                      (currentStep === 2 &&
-                        step2.detectedFurniture.length > 0 &&
-                        step2.selectedFurniture.length === 0) ||
                       isSubmitting ||
                       stepLoadingFor !== null ||
                       step4FloorPlanLoading ||
@@ -824,9 +909,7 @@ export function AIGenerationFlow({
               <button
                 type="button"
                 onClick={handlePreviousStep}
-                disabled={
-                  currentStep === 1 || step4FloorPlanLoading
-                }
+                disabled={currentStep === 1 || step4FloorPlanLoading}
                 className="text-[13px] text-textSecondary hover:text-foreground transition-colors duration-300 disabled:opacity-30 disabled:cursor-not-allowed"
                 style={{
                   fontFamily: "'Inter', sans-serif",
@@ -872,9 +955,6 @@ export function AIGenerationFlow({
                 disabled={
                   (currentStep === 1 &&
                     !(step1.uploadedImageUrl ?? step1.uploadedImage)) ||
-                  (currentStep === 2 &&
-                    step2.detectedFurniture.length > 0 &&
-                    step2.selectedFurniture.length === 0) ||
                   isSubmitting ||
                   stepLoadingFor !== null ||
                   step4FloorPlanLoading ||

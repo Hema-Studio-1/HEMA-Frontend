@@ -40,7 +40,7 @@ export function Projects({ onProjectClick }: ProjectsProps) {
 
     // Create project without image by default
     const newProject: Project = {
-      id: Date.now().toString(),
+      id: "2026-03-19T17:54:49.425Z",
       name: formData.name,
       description: formData.description || "No designs yet",
       imageUrl: undefined, // No image by default

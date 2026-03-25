@@ -1,5 +1,4 @@
 import { parseApiError } from "@/lib/auth-client-errors";
-import { ENV_VARIABLES } from "@/lib/env-variables";
 import type { User } from "next-auth";
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -163,7 +162,8 @@ export const authOptions = {
   //     },
   //   },
   // },
-  secret: ENV_VARIABLES.NEXTAUTH_SECRET,
+  // Server-only: set NEXTAUTH_SECRET in hosting env (Vercel, etc.). Do not use NEXT_PUBLIC_.
+  secret: process.env.NEXTAUTH_SECRET,
 };
 
 export default NextAuth(authOptions);

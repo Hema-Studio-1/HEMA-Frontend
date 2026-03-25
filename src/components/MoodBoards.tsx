@@ -47,7 +47,7 @@ export function MoodBoards() {
     images: string[],
   ) => {
     const newMoodBoard: MoodBoard = {
-      id: Date.now().toString(),
+      id: '123124',
       name,
       type,
       images,

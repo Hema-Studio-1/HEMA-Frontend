@@ -86,6 +86,8 @@ export interface DetectFurnitureRequest {
 
 export interface DetectedObject {
   detected: string;
+  label?: string;
+  category?: string;
   maskUrl?: string;
   objectUrl?: string;
   boundingBox?: {
@@ -96,16 +98,31 @@ export interface DetectedObject {
   } | null;
 }
 
-/** Shape of detections array: category objects e.g. { furniture: [...] }, { electronics: [...] } */
+export interface DetectionBoundingBox {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface FlatDetectedItem {
+  label: string;
+  category?: string;
+  boundingBox?: DetectionBoundingBox | null;
+}
+
+export type GroupedDetectedItems = Record<string, FlatDetectedItem[]>;
+
+/** API may return grouped category buckets or flat detection items */
 export interface DetectFurnitureResult {
   itemsDetected?: number;
-  detections?: Array<Record<string, Array<{ label: string; boundingBox?: { x: number; y: number; width: number; height: number } }>>>;
+  detections?: Array<FlatDetectedItem | GroupedDetectedItems>;
   segmentedObjects?: Array<{
     id: string;
     imageId: string;
     label: string;
     maskImageId: string;
-    boundingBox?: { x: number; y: number; width: number; height: number } | null;
+    boundingBox?: DetectionBoundingBox | null;
     createdAt: string;
   }>;
   output?: {
@@ -128,7 +145,12 @@ export interface DetectFurnitureResponseWrapper {
     imageId?: string;
     label: string;
     maskImageId?: string;
-    boundingBox?: { x: number; y: number; width: number; height: number } | null;
+    boundingBox?: {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    } | null;
     createdAt?: string;
   }>;
 }

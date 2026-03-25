@@ -229,7 +229,7 @@ export function Assets() {
     imageUrl: string,
   ) => {
     const newAsset: Asset = {
-      id: Date.now().toString(),
+      id: '123123',
       name,
       category,
       type,

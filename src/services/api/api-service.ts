@@ -46,13 +46,14 @@ function getRetryKey(method: string, url: string): string {
 
 function isInCooldown(key: string): boolean {
   const until = retryCooldownMap.get(key);
-  if (!until) return false;
+  if (!until || typeof window === "undefined") return false;
   if (Date.now() < until) return true;
   retryCooldownMap.delete(key);
   return false;
 }
 
 function setCooldown(key: string): void {
+  if (typeof window === "undefined") return;
   retryCooldownMap.set(key, Date.now() + RETRY_COOLDOWN_MS);
 }
 

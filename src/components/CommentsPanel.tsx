@@ -8,7 +8,7 @@ interface Comment {
   userName: string;
   userRole: string;
   text: string;
-  timestamp: Date;
+  timestamp: Date | string;
   assignedTo?: string;
   isAssigned: boolean;
 }
@@ -26,7 +26,7 @@ const mockComments: Comment[] = [
     userName: "Sarah Chen",
     userRole: "Designer",
     text: "The lighting feels too warm for this style. Consider cooler temperature fixtures to balance the natural wood tones.",
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
+    timestamp: "2026-03-19T17:54:49.425Z",
     isAssigned: false,
   },
   {
@@ -35,7 +35,7 @@ const mockComments: Comment[] = [
     userName: "Michael Torres",
     userRole: "Project Lead",
     text: "Can we explore more sustainable material options for the coffee table? Client mentioned environmental concerns.",
-    timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000),
+    timestamp: "2026-03-19T17:54:49.425Z",
     assignedTo: "Sarah Chen",
     isAssigned: true,
   },
@@ -45,7 +45,7 @@ const mockComments: Comment[] = [
     userName: "Emma Wilson",
     userRole: "Reviewer",
     text: "Love the overall direction. The area rug ties everything together beautifully.",
-    timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+    timestamp: "2026-03-19T17:54:49.425Z",
     isAssigned: false,
   },
   {
@@ -54,7 +54,7 @@ const mockComments: Comment[] = [
     userName: "Sarah Chen",
     userRole: "Designer",
     text: "Updated the material palette with eco-friendly alternatives. Please review the revised options.",
-    timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+    timestamp: "2026-03-19T17:54:49.425Z",
     isAssigned: false,
   },
 ];
@@ -103,7 +103,7 @@ export function CommentsPanel({
     if (!newComment.trim()) return;
 
     const comment: Comment = {
-      id: Date.now().toString(),
+      id: "123122",
       userId: "current-user",
       userName: "You",
       userRole: "Designer",
@@ -140,6 +140,8 @@ export function CommentsPanel({
       textareaRef.current.focus();
     }
   }, [isOpen]);
+
+  if (typeof window === "undefined") return null;
 
   return (
     <>
@@ -257,7 +259,7 @@ export function CommentsPanel({
                           fontWeight: 300,
                         }}
                       >
-                        · {getRelativeTime(comment.timestamp)}
+                        · {getRelativeTime(new Date(comment.timestamp))}
                       </span>
                     </div>
 

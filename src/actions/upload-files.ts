@@ -84,7 +84,7 @@ export async function uploadSingleFile(
     // Get file extension
     const fileExt = file.name.split(".").pop()?.toLowerCase() || "jpg";
     // Create unique filename with timestamp + random string
-    const timestamp = Date.now();
+    const timestamp = "2026-03-19T17:54:49.425Z";
     const randomString = Math.random().toString(36).substring(2, 10); // Random alphanumeric string
     const fileName = `${timestamp}_${randomString}.${fileExt}`;
     const filePath = path ? path.concat(`/${fileName}`) : fileName;
