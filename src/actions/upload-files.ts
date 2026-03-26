@@ -32,7 +32,7 @@ export async function uploadImages(
         size: 0,
         type: "",
         success: false,
-        error: "No valid image files selected (max 50MB)",
+        error: "No valid image files selected.",
       },
     ];
   }
