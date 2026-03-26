@@ -1,9 +1,9 @@
 import { ENV_VARIABLES } from "@/lib/env-variables";
 import { $serverFetch } from "@/services/api/api-service";
 import type {
-  ILoginErrorResponse,
-  ILoginResponse,
-  IUser,
+    ILoginErrorResponse,
+    ILoginResponse,
+    IUser,
 } from "@/types/auth";
 
 export interface LoginUserPayload {
@@ -39,6 +39,8 @@ export interface LoginErrorResult {
     message?: string;
     error?: string;
     statusCode?: number;
+    /** Axios / Node network code when status is 0 */
+    code?: string;
   };
 }
 
@@ -52,7 +54,6 @@ export async function loginUser(
   payload: LoginUserPayload
 ): Promise<LoginResponse> {
   try {
-    console.log("payload", payload);
     const response = await $serverFetch<ILoginResponse>({
       url: "/auth/login",
       method: "POST",
@@ -62,14 +63,15 @@ export async function loginUser(
         twoFactorToken:''
       },
     });
-    console.log("response", response);
     const apiResponse = response.data;
     if (!apiResponse || response.status < 200 || response.status >= 300) {
       return {
         success: false,
         error: {
           message: response.error ?? "Login failed",
+          error: response.meta?.errorTitle,
           statusCode: response.status,
+          code: response.meta?.connectionCode,
         },
       };
     }
@@ -116,6 +118,7 @@ export async function loginUser(
       error: {
         message,
         statusCode: 0,
+        error: "Unexpected login error",
       },
     };
   }

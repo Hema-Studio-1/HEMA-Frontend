@@ -11,6 +11,18 @@ export interface AuthError {
   message: string;
 }
 
+function coerceAuthErrorType(value: string | undefined): AuthError["type"] {
+  if (
+    value === "default" ||
+    value === "success" ||
+    value === "error" ||
+    value === "warning"
+  ) {
+    return value;
+  }
+  return "error";
+}
+
 export interface ApiErrorResponse {
   /** General description (shown as message/description in UI) */
   message: string;
@@ -88,16 +100,42 @@ export function parseAuthError(
 
   // Try to parse as structured error (e.g. NextAuth JSON string)
   try {
-    const structuredError = JSON.parse(message);
+    const structuredError = JSON.parse(message) as {
+      title?: string;
+      message?: string;
+      type?: string;
+      code?: string;
+    };
     if (structuredError.title && structuredError.message) {
+      const extra =
+        structuredError.code && structuredError.code !== "undefined"
+          ? ` (${structuredError.code})`
+          : "";
       return {
         title: structuredError.title,
-        message: structuredError.message,
-        type: structuredError.type || "error",
+        message: `${structuredError.message}${extra}`,
+        type: coerceAuthErrorType(structuredError.type),
       };
     }
   } catch {
     // Not a structured error, continue with regular parsing
+  }
+
+  if (statusCode === 0 && message) {
+    const lower = message.toLowerCase();
+    if (
+      lower.includes("cannot reach") ||
+      lower.includes("econnrefused") ||
+      lower.includes("enotfound") ||
+      lower.includes("etimedout") ||
+      lower.includes("network error")
+    ) {
+      return {
+        type: "error",
+        title: "Backend API connection failed",
+        message,
+      };
+    }
   }
 
   // Handle different error scenarios (when no title was provided)

@@ -20,6 +20,8 @@ interface FetchResponse<T> {
   error: string | null;
   status: number;
   validationErrors?: Record<string, string>;
+  /** Extra context for auth / server fetch failures (not sent to client APIs arbitrarily). */
+  meta?: { connectionCode?: string; errorTitle?: string };
 }
 interface ApiError {
   message: string | string[];

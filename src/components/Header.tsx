@@ -1,3 +1,5 @@
+import { useAuthFailure } from "@/contexts/AuthFailureContext";
+import { useSessionAuthDisplay } from "@/contexts/SessionAuthDisplayContext";
 import { Bell, Loader2, User } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
@@ -9,7 +11,11 @@ interface HeaderProps {
 
 export function Header({ onHomeClick, onNotificationsClick }: HeaderProps) {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const { data: session, status } = useSession();
+  const { status } = useSession();
+  const { openAuthFailureWithDeploymentCheck } = useAuthFailure();
+  const { authStabilizing } = useSessionAuthDisplay();
+
+  const showNavLoading = status === "loading" || authStabilizing;
 
   const notifications = [
     {
@@ -44,6 +50,7 @@ export function Header({ onHomeClick, onNotificationsClick }: HeaderProps) {
       <div className="flex items-center justify-between md:px-8 px-4 py-3">
         {/* Logo - Clickable to expand sidebar */}
         <button
+          type="button"
           onClick={onHomeClick}
           className="text-[14px] text-[#1a1a1a] tracking-wide hover:text-foreground transition-colors duration-300"
           style={{
@@ -60,6 +67,7 @@ export function Header({ onHomeClick, onNotificationsClick }: HeaderProps) {
           {/* Notification Bell */}
           <div className="relative">
             <button
+              type="button"
               onClick={() => setIsNotificationOpen(!isNotificationOpen)}
               className="w-8 h-8 rounded-full bg-transparent hover:bg-[#E8E6E3]/50 flex items-center justify-center transition-colors duration-300"
             >
@@ -70,7 +78,9 @@ export function Header({ onHomeClick, onNotificationsClick }: HeaderProps) {
             {isNotificationOpen && (
               <>
                 {/* Backdrop to close */}
-                <div
+                <button
+                  type="button"
+                  aria-label="Close notifications"
                   className="fixed inset-0 z-40"
                   onClick={() => setIsNotificationOpen(false)}
                 />
@@ -130,6 +140,7 @@ export function Header({ onHomeClick, onNotificationsClick }: HeaderProps) {
                   {/* Footer */}
                   <div className="px-6 py-4 border-t border-[#E8E6E3]">
                     <button
+                      type="button"
                       onClick={handleViewAllClick}
                       className="text-[12px] text-[#626262] hover:text-foreground transition-colors duration-300"
                       style={{
@@ -154,36 +165,48 @@ export function Header({ onHomeClick, onNotificationsClick }: HeaderProps) {
               fontWeight: 400,
             }}
           >
-            {status === "loading" && (
+            {showNavLoading && (
               <>
                 <Loader2 size={14} className="animate-spin text-[#626262]" />
                 <span className="text-[#626262]">Connecting...</span>
               </>
             )}
-            {status === "authenticated" && (
+            {!showNavLoading && status === "authenticated" && (
               <>
                 <span
                   className="w-2 h-2 rounded-full bg-green-500 shrink-0"
                   title="Authenticated"
                 />
-                <span className="text-[#1a1a1a]">
-                  {session?.user?.name || session?.user?.email || "Demo User"}
-                </span>
+                <span className="text-[#1a1a1a]">{"Demo User"}</span>
               </>
             )}
-            {status === "unauthenticated" && (
+            {!showNavLoading && status === "unauthenticated" && (
               <>
                 <span
                   className="w-2 h-2 rounded-full bg-red-500 shrink-0"
-                  title="Auth failed"
+                  title="No active session"
                 />
                 <span className="text-red-600">Auth Failed</span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    void openAuthFailureWithDeploymentCheck({
+                      title: "Why connection failed",
+                    })
+                  }
+                  className="ml-1 rounded-sm border border-red-200 bg-red-50 px-2 py-0.5 text-[11px] text-red-800 hover:bg-red-100"
+                >
+                  Why?
+                </button>
               </>
             )}
           </div>
 
           {/* User */}
-          <button className="w-8 h-8 rounded-full bg-transparent hover:bg-[#E8E6E3]/50 flex items-center justify-center transition-colors duration-300">
+          <button
+            type="button"
+            className="w-8 h-8 rounded-full bg-transparent hover:bg-[#E8E6E3]/50 flex items-center justify-center transition-colors duration-300"
+          >
             <User size={16} className="text-[#626262]" strokeWidth={1.5} />
           </button>
         </div>

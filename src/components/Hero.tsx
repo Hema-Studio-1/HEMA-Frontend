@@ -1,5 +1,6 @@
 "use client";
 
+import { useSessionAuthDisplay } from "@/contexts/SessionAuthDisplayContext";
 import { Sparkles } from "lucide-react";
 import { useSession } from "next-auth/react";
 import React from "react";
@@ -10,7 +11,8 @@ interface HeroProps {
 
 export function Hero({ onStartAIFlow }: HeroProps) {
   const { status } = useSession();
-  const isSessionReady = status !== "loading";
+  const { authStabilizing } = useSessionAuthDisplay();
+  const isSessionReady = status !== "loading" && !authStabilizing;
   const isAuthenticated = status === "authenticated";
   const isGenerateDisabled = !isSessionReady || !isAuthenticated;
 

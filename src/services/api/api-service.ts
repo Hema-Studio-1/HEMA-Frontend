@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/** biome-ignore-all lint/suspicious/noExplicitAny: <explanation> */
+/** biome-ignore-all lint/suspicious/noExplicitAny: API wrapper handles heterogeneous error shapes */
 
+import { classifyAxiosApiFailure } from "@/lib/auth-connection-errors";
 import { ENV_VARIABLES } from "@/lib/env-variables";
 import {
   getAuthToken,
@@ -36,7 +37,7 @@ const processQueue = (error: any, token: string | null = null) => {
 
 export const BASE_URL = ENV_VARIABLES.API_URL;
 
-const MAX_RETRIES = 3;
+const MAX_RETRIES = 2;
 const RETRY_COOLDOWN_MS = 15 * 60 * 1000; // 15 minutes
 const retryCooldownMap = new Map<string, number>();
 
@@ -130,7 +131,6 @@ export async function $axiosReq<T = any>({
 
   let lastError: unknown = null;
   let lastApiError: { message: string; status: number } | null = null;
-  const hasRetriedBody401 = false;
 
   for (let attempt = 0; attempt <= (enableRetry ? MAX_RETRIES : 0); attempt++) {
     try {
@@ -241,7 +241,6 @@ export async function $serverFetch<T = any>({
   };
 
   try {
-    console.log("base url", ENV_VARIABLES.API_URL, axiosConfig);
     const response: AxiosResponse<T> = await axios(axiosConfig);
 
     if (!response.status.toString().startsWith("2")) {
@@ -261,8 +260,17 @@ export async function $serverFetch<T = any>({
         status: response.status,
       };
     }
-  } catch {
-    return { data: null, error: "Server Error", status: 0 };
+  } catch (error) {
+    const c = classifyAxiosApiFailure(error);
+    return {
+      data: null,
+      error: c.message,
+      status: 0,
+      meta: {
+        errorTitle: c.title,
+        connectionCode: c.connectionCode,
+      },
+    };
   }
 }
 
@@ -369,7 +377,6 @@ const handleTokenRefresh = async <T>(
     }
 
     const newAccessToken = session?.accessToken ?? null;
-    const newRefreshToken = session?.refreshToken ?? null;
 
     originalConfig.headers = {
       ...originalConfig.headers,
