@@ -1,25 +1,26 @@
 import type {
-    CreateFullSpaceRequest,
-    CreateFullSpaceResponse,
-    CreateSpaceWithImageRequest,
-    CreateSpaceWithImageResponse,
-    DetectFurnitureRequest,
-    DetectFurnitureResponse,
-    EmptyCompleteRoomRequest,
-    EmptyCompleteRoomResponse,
-    FillRoomFromFloorPlanRequest,
-    FillRoomFromFloorPlanResponse,
-    FillRoomFromInspirationFurnitureRequest,
-    FillRoomFromInspirationFurnitureResponse,
-    FillRoomFromSurpriseRequest,
-    FillRoomFromSurpriseResponse,
-    GetSpacesResponse,
-    MeasureRoomRequest,
-    MeasureRoomResponse,
-    RemoveFurnitureRequest,
-    RemoveFurnitureResponse,
-    UpdateSpaceDetailsRequest,
-    UpdateSpaceDetailsResponse,
+  CreateFullSpaceRequest,
+  CreateFullSpaceResponse,
+  CreateSpaceWithImageRequest,
+  CreateSpaceWithImageResponse,
+  DetectFurnitureRequest,
+  DetectFurnitureResponse,
+  EmptyCompleteRoomRequest,
+  EmptyCompleteRoomResponse,
+  FillRoomFromFloorPlanRequest,
+  FillRoomFromFloorPlanResponse,
+  FillRoomFromInspirationFurnitureRequest,
+  FillRoomFromInspirationFurnitureResponse,
+  FillRoomFromInspirationFurnitureWithActualImageRequest,
+  FillRoomFromSurpriseRequest,
+  FillRoomFromSurpriseResponse,
+  GetSpacesResponse,
+  MeasureRoomRequest,
+  MeasureRoomResponse,
+  RemoveFurnitureRequest,
+  RemoveFurnitureResponse,
+  UpdateSpaceDetailsRequest,
+  UpdateSpaceDetailsResponse,
 } from "@/types/space";
 import { $axiosReq } from "./api-service";
 import type { FetchResponse } from "./api.types";
@@ -119,6 +120,18 @@ export async function fillRoomFromInspirationFurniture(
 ): Promise<FetchResponse<FillRoomFromInspirationFurnitureResponse>> {
   return $axiosReq<FillRoomFromInspirationFurnitureResponse>({
     url: `spaces/${spaceId}/fill-room-from-inpiration-furniture`,
+    method: "POST",
+    data,
+    silent: true,
+  });
+}
+
+export async function fillRoomFromInspirationFurnitureWithActualImage(
+  spaceId: string,
+  data: FillRoomFromInspirationFurnitureWithActualImageRequest,
+): Promise<FetchResponse<FillRoomFromInspirationFurnitureResponse>> {
+  return $axiosReq<FillRoomFromInspirationFurnitureResponse>({
+    url: `spaces/${spaceId}/fill-room-from-inpiration-furniture-with-acutal-image`,
     method: "POST",
     data,
     silent: true,

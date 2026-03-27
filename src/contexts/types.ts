@@ -1,16 +1,16 @@
 import type {
-    ChatMessage,
-    DetectedFurnitureGroup,
-    DetectedFurnitureItem,
-    Dimensions,
-    FlowTab,
-    Step,
-    Step1Data,
-    Step2Data,
-    Step3Data,
-    Step4Data,
-    Step5Data,
-    Step6Data,
+  ChatMessage,
+  DetectedFurnitureGroup,
+  DetectedFurnitureItem,
+  Dimensions,
+  FlowTab,
+  Step,
+  Step1Data,
+  Step2Data,
+  Step3Data,
+  Step4Data,
+  Step5Data,
+  Step6Data,
 } from "@/containers/ai-generation-flow/types";
 import type { SpaceWithRelations } from "@/types/space";
 import type { Dispatch, SetStateAction } from "react";
@@ -25,10 +25,12 @@ export interface Step1Context extends Step1Data {
   setBudget: Dispatch<SetStateAction<number | null>>;
   setUploadedImage: Dispatch<SetStateAction<string | null>>;
   setImageId: Dispatch<SetStateAction<string | null>>;
-  setImageDimensions: Dispatch<SetStateAction<{
-    width: number;
-    height: number;
-  } | null>>;
+  setImageDimensions: Dispatch<
+    SetStateAction<{
+      width: number;
+      height: number;
+    } | null>
+  >;
 }
 
 export interface Step2Context extends Step2Data {
@@ -39,6 +41,7 @@ export interface Step2Context extends Step2Data {
   setSelectedFurniture: Dispatch<SetStateAction<string[]>>;
   setCleanedImageUrl: Dispatch<SetStateAction<string | null>>;
   setIntermediateImageId: Dispatch<SetStateAction<string | null>>;
+  setDidRemoveFurniture: Dispatch<SetStateAction<boolean>>;
 }
 
 export interface Step3Context extends Step3Data {

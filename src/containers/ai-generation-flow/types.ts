@@ -1,4 +1,3 @@
-import type { SpaceWithRelations } from "@/types/space";
 import type { LucideIcon } from "lucide-react";
 
 export type Step = 1 | 2 | 3 | 4 | 5 | 6;
@@ -90,6 +89,7 @@ export interface Step2Data {
   selectedFurniture: string[];
   cleanedImageUrl: string | null;
   intermediateImageId: string | null;
+  didRemoveFurniture: boolean;
 }
 
 /** Step 3: Add Inspiration - style, mood, materials, inspiration images */

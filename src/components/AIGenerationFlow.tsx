@@ -19,6 +19,7 @@ import {
   detectFurniture,
   emptyCompleteRoom,
   fillRoomFromInspirationFurniture,
+  fillRoomFromInspirationFurnitureWithActualImage,
   fillRoomFromSurprise,
   removeFurniture,
 } from "@/services/api/spaces";
@@ -426,6 +427,7 @@ export function AIGenerationFlow({
       if (selectedItems.length === 0) {
         step2.setCleanedImageUrl(null);
         step2.setIntermediateImageId(imageId);
+        step2.setDidRemoveFurniture(false);
         setCurrentStep(3);
         setStepLoadingFor(null);
         setStepErrorMessage(null);
@@ -479,6 +481,8 @@ export function AIGenerationFlow({
         result = res.data;
       }
 
+      step2.setDidRemoveFurniture(true);
+
       const path = result?.path ?? result?.image?.storagePath;
       const cleanedUrl = path
         ? await getSignedUrlForPath(path)
@@ -503,7 +507,9 @@ export function AIGenerationFlow({
 
   const handleStep3Submit = async () => {
     const space = step1.space;
+    const originalImageId = step1.imageId;
     const intermediateImageId = step2.intermediateImageId;
+    const didRemoveFurniture = step2.didRemoveFurniture;
     const inspirationImageId = step3.inspirationImageId;
     if (!space || !intermediateImageId) {
       toast.error("Empty room image not found. Please complete step 2 first.");
@@ -523,15 +529,25 @@ export function AIGenerationFlow({
     setStepLoadingFor(4);
 
     try {
-      const res = await fillRoomFromInspirationFurniture(space.id, {
-        imageId: intermediateImageId,
-        inpirationFurnitureImageId: inspirationImageId,
-        aiContext: {
-          style_keywords: step3.styleKeywords,
-          mood: step3.mood,
-          materials: step3.materials,
-        },
-      });
+      const aiContext = {
+        style_keywords: step3.styleKeywords,
+        mood: step3.mood,
+        materials: step3.materials,
+      };
+
+      const res =
+        didRemoveFurniture && originalImageId
+          ? await fillRoomFromInspirationFurnitureWithActualImage(space.id, {
+              originalImageId,
+              imageId: intermediateImageId,
+              inpirationFurnitureImageId: inspirationImageId,
+              aiContext,
+            })
+          : await fillRoomFromInspirationFurniture(space.id, {
+              imageId: intermediateImageId,
+              inpirationFurnitureImageId: inspirationImageId,
+              aiContext,
+            });
 
       if (res.error) {
         setStepLoadingFor(null);

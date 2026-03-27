@@ -202,6 +202,13 @@ export interface FillRoomFromInspirationFurnitureRequest {
   aiContext: AIContext;
 }
 
+export interface FillRoomFromInspirationFurnitureWithActualImageRequest {
+  originalImageId: string;
+  imageId: string;
+  inpirationFurnitureImageId: string;
+  aiContext: AIContext;
+}
+
 export interface FillRoomFromInspirationFurnitureResponse {
   path?: string;
   image: Image;

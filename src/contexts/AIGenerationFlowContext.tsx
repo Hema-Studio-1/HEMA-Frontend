@@ -1,30 +1,30 @@
 "use client";
 
 import type {
-    ChatMessage,
-    DetectedFurnitureGroup,
-    DetectedFurnitureItem,
-    Dimensions,
-    FlowTab,
-    Step,
+  ChatMessage,
+  DetectedFurnitureGroup,
+  DetectedFurnitureItem,
+  Dimensions,
+  FlowTab,
+  Step,
 } from "@/containers/ai-generation-flow/types";
 import type { SpaceWithRelations } from "@/types/space";
 import {
-    createContext,
-    useCallback,
-    useContext,
-    useEffect,
-    useMemo,
-    useState,
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
 } from "react";
 import type {
-    AIGenerationFlowContextValue,
-    Step1Context,
-    Step2Context,
-    Step3Context,
-    Step4Context,
-    Step5Context,
-    Step6Context,
+  AIGenerationFlowContextValue,
+  Step1Context,
+  Step2Context,
+  Step3Context,
+  Step4Context,
+  Step5Context,
+  Step6Context,
 } from "./types";
 
 const AIGenerationFlowContext =
@@ -73,6 +73,7 @@ export function AIGenerationFlowProvider({
   const [intermediateImageId, setIntermediateImageId] = useState<string | null>(
     null,
   );
+  const [didRemoveFurniture, setDidRemoveFurniture] = useState(false);
 
   // Step 3
   const [styleKeywords, setStyleKeywords] = useState("");
@@ -159,6 +160,7 @@ export function AIGenerationFlowProvider({
     setSelectedFurniture([]);
     setCleanedImageUrl(null);
     setIntermediateImageId(null);
+    setDidRemoveFurniture(false);
     setStyleKeywords("");
     setMood("");
     setMaterials("");
@@ -242,11 +244,13 @@ export function AIGenerationFlowProvider({
       selectedFurniture,
       cleanedImageUrl,
       intermediateImageId,
+      didRemoveFurniture,
       setDetectedFurniture,
       setDetectedFurnitureGrouped,
       setSelectedFurniture,
       setCleanedImageUrl,
       setIntermediateImageId,
+      setDidRemoveFurniture,
     }),
     [
       detectedFurniture,
@@ -254,6 +258,7 @@ export function AIGenerationFlowProvider({
       selectedFurniture,
       cleanedImageUrl,
       intermediateImageId,
+      didRemoveFurniture,
     ],
   );
 
